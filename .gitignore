@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# env
+.env
+.env.*
+!.env.example
+
+# builds
+dist/
+build/
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+__MACOSX/
