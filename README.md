@@ -25,6 +25,8 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Dashboard com métricas, gráficos e últimas análises.
 - Histórico de análises com busca, filtros, paginação, relatório detalhado e
   exportação em PDF.
+- Destaque visual dos níveis de risco no dashboard, histórico e relatório
+  detalhado, com contraste adaptado ao tema do dispositivo.
 - Cópia do ID da análise para vincular denúncias.
 - Registro de denúncias de vagas suspeitas.
 - Busca de análise existente no formulário de denúncia.
