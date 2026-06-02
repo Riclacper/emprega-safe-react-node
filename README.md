@@ -10,6 +10,8 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Cadastro de usuário com nome, e-mail e senha.
 - Validação de formato do e-mail e aviso para erros comuns de digitação no
   domínio durante o cadastro.
+- Auditoria de tentativas de cadastro com retenção automática e dados
+  minimizados para investigação de possíveis ameaças.
 - Login com e-mail e senha.
 - Verificação de acesso por código de 6 dígitos enviado por e-mail, com campos
   individuais e suporte a copiar e colar.
@@ -260,6 +262,9 @@ MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/test
 JWT_SECRET=sua_chave_jwt_forte
 JWT_EXPIRES_IN=1h
 CORS_ORIGIN=http://localhost:5173
+TRUST_PROXY_HOPS=
+REGISTRATION_AUDIT_RETENTION_DAYS=90
+REGISTRATION_AUDIT_HASH_SECRET=sua_chave_exclusiva_para_auditoria
 
 ADMIN_NAME=Administrador
 ADMIN_EMAIL=admin@empregasafe.com
@@ -348,6 +353,7 @@ Coleções principais:
 users
 analyses
 reports
+registrationaudits
 ```
 
 ### `users`
@@ -419,6 +425,57 @@ createdAt
 updatedAt
 ```
 
+### `registrationaudits`
+
+Armazena tentativas aceitas, rejeitadas ou com erro durante o cadastro. A
+coleção não recebe senha, token ou código de verificação. E-mail e IP são
+mascarados para consulta e também armazenados como hashes para correlação.
+
+Os registros expiram automaticamente após o período definido em
+`REGISTRATION_AUDIT_RETENTION_DAYS`.
+
+#### Consultar auditoria de cadastros
+
+Para listar eventos recentes:
+
+```bash
+cd backend
+npm run audit:registrations -- --days=7 --limit=50
+```
+
+Para investigar tentativas relacionadas a um e-mail específico:
+
+```bash
+npm run audit:registrations -- --email=usuario@exemplo.com
+```
+
+Exemplo fictício e resumido da saída:
+
+```txt
+{
+  filters: { days: 7, limit: 50, email: '' },
+  summary: [
+    { _id: { outcome: 'accepted', reason: 'account_created' }, total: 1 },
+    { _id: { outcome: 'rejected', reason: 'invalid_email' }, total: 1 }
+  ],
+  events: [
+    {
+      createdAt: '2026-06-02T14:00:00.000Z',
+      outcome: 'rejected',
+      reason: 'invalid_email',
+      maskedEmail: 'p***@example.vom',
+      emailHash: 'a1b2c3d4e5f6',
+      maskedIp: '192.168.1.***',
+      ipHash: 'f6e5d4c3b2a1',
+      userAgent: 'Mozilla/5.0'
+    }
+  ]
+}
+```
+
+Os hashes reduzidos exibidos no terminal ajudam a correlacionar tentativas sem
+expor os valores completos armazenados.
+
 ## Como rodar localmente
 
 ### 1. Backend
@@ -482,6 +539,8 @@ npm run seed:analyses -- usuario@exemplo.com=100
 npm run seed:analyses:hybrid -- usuario@exemplo.com=20
 npm run cleanup:duplicate-reports -- usuario@exemplo.com --apply
 npm run backfill:analysis-fingerprints -- --apply
+npm run audit:registrations -- --days=7 --limit=50
+npm run audit:registrations -- --email=usuario@exemplo.com
 npm run test:unit
 npm run test:security
 npm run test:ai
@@ -565,6 +624,9 @@ Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 
 - Não envie `.env` para o GitHub.
 - Use `JWT_SECRET` forte em produção.
+- Use `REGISTRATION_AUDIT_HASH_SECRET` exclusivo em produção.
+- Configure `TRUST_PROXY_HOPS=1` apenas quando a API estiver atrás de um proxy
+  confiável, como o proxy do provedor de deploy.
 - Use senha de app para envio de e-mail via Gmail.
 - Não envie senhas por e-mail.
 - As senhas são armazenadas com hash usando `bcryptjs`.

@@ -12,6 +12,12 @@ const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 
 const app = express();
 
+const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS);
+
+if (Number.isInteger(trustProxyHops) && trustProxyHops >= 1) {
+  app.set("trust proxy", trustProxyHops);
+}
+
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map((origin) => origin.trim())

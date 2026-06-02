@@ -7,6 +7,9 @@ const {
   sendPasswordResetEmail,
 } = require("../services/emailService");
 const { validateEmail } = require("../utils/emailValidation");
+const {
+  recordRegistrationAudit,
+} = require("../services/registrationAuditService");
 function generateCode() {
   return crypto.randomInt(100000, 1000000).toString();
 }
@@ -20,39 +23,60 @@ function generateToken(user) {
 }
 
 async function register(req, res) {
+  let auditEmail = "";
+
   try {
     const name = String(req.body.name || "").trim();
     const email = String(req.body.email || "")
       .toLowerCase()
       .trim();
     const password = String(req.body.password || "");
+    auditEmail = email;
+
+    async function rejectRegistration(status, message, reason) {
+      await recordRegistrationAudit(req, {
+        email,
+        outcome: "rejected",
+        reason,
+      });
+
+      return res.status(status).json({ message });
+    }
 
     if (!name || !email || !password) {
-      return res.status(400).json({
-        message: "Informe nome, e-mail e senha.",
-      });
+      return rejectRegistration(
+        400,
+        "Informe nome, e-mail e senha.",
+        "missing_required_fields",
+      );
     }
 
     const emailValidation = validateEmail(email);
 
     if (!emailValidation.valid) {
-      return res.status(400).json({
-        message: emailValidation.message,
-      });
+      return rejectRegistration(
+        400,
+        emailValidation.message,
+        "invalid_email",
+      );
     }
 
     if (password.length < 6) {
-      return res.status(400).json({
-        message: "A senha deve ter pelo menos 6 caracteres.",
-      });
+      return rejectRegistration(
+        400,
+        "A senha deve ter pelo menos 6 caracteres.",
+        "weak_password",
+      );
     }
 
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(409).json({
-        message: "Este e-mail já está cadastrado.",
-      });
+      return rejectRegistration(
+        409,
+        "Este e-mail já está cadastrado.",
+        "email_already_registered",
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,6 +91,13 @@ async function register(req, res) {
       verificationExpires: null,
     });
 
+    await recordRegistrationAudit(req, {
+      email,
+      outcome: "accepted",
+      reason: "account_created",
+      user,
+    });
+
     return res.status(201).json({
       message: "Conta criada com sucesso.",
       user: {
@@ -76,6 +107,12 @@ async function register(req, res) {
       },
     });
   } catch (error) {
+    await recordRegistrationAudit(req, {
+      email: auditEmail,
+      outcome: "error",
+      reason: "internal_error",
+    });
+
     return res.status(500).json({
       message: "Erro ao criar conta.",
     });
