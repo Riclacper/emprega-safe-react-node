@@ -19,8 +19,8 @@ function normalizeClassification(classification) {
 
 async function getStats(req, res) {
   const [analyses, reports] = await Promise.all([
-    Analysis.find(),
-    Report.find(),
+    Analysis.find({ user: req.user._id }),
+    Report.find({ user: req.user._id }),
   ]);
 
   const stats = analyses.reduce(

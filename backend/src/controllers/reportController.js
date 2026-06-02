@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 
 async function listReports(req, res) {
   try {
-    const reports = await Report.find()
+    const reports = await Report.find({ user: req.user._id })
       .populate("analysis", "externalId title company classification score")
       .sort({ createdAt: -1 })
       .limit(200);
@@ -42,7 +42,10 @@ async function createReport(req, res) {
           }
         : { externalId: analysisId };
 
-      analysis = await Analysis.findOne(query);
+      analysis = await Analysis.findOne({
+        ...query,
+        user: req.user._id,
+      });
     }
 
     if (validation.payload.analysisId && !analysis) {
@@ -98,10 +101,10 @@ async function createReport(req, res) {
 
 async function sendReportByEmail(req, res) {
   try {
-    const report = await Report.findById(req.params.id).populate(
-      "analysis",
-      "externalId title company classification score link",
-    );
+    const report = await Report.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    }).populate("analysis", "externalId title company classification score link");
 
     if (!report) {
       return res.status(404).json({

@@ -1,0 +1,296 @@
+/* Tema aplicado automaticamente quando o dispositivo prefere cores escuras. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0b1220;
+    --card: #111827;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --primary: #8ea2ff;
+    --primary-dark: #bac5ff;
+    --line: #334155;
+    --border: var(--line);
+    --primary-soft: #1e293b;
+    --safe: #6ee7b7;
+    --warn: #fcd34d;
+    --danger: #fca5a5;
+    --critical: #fecaca;
+    --shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+  }
+
+  body,
+  .main-content {
+    background: var(--bg);
+  }
+
+  .auth-page,
+  .landing-page {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(81, 103, 246, 0.24), transparent 36%),
+      linear-gradient(180deg, #101827 0%, #0b1220 100%);
+  }
+
+  .card,
+  .metric-card,
+  .auth-card,
+  .topbar-user,
+  .user-area,
+  .landing-login-link,
+  .landing-secondary,
+  .landing-preview-card,
+  .landing-cards article,
+  .landing-section,
+  .landing-final,
+  .analysis-picker-list,
+  .analysis-options,
+  .analysis-loading-box,
+  .report-modal {
+    background: var(--card);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  .auth-brand-row,
+  .auth-card p,
+  .landing-nav a {
+    color: var(--text);
+  }
+
+  .field-control,
+  .field-control:focus-within,
+  .login-field-control,
+  .login-field-control:focus-within,
+  .verify-code-input,
+  .verify-code-input:focus,
+  .search-input,
+  .form-grid select,
+  .form-grid .analysis-currency-select,
+  .history-sort select,
+  .clear-search-button,
+  .pagination-actions button,
+  .filter-tabs button,
+  .filter-pills button,
+  .report-view-button,
+  .copy-id-button,
+  .clear-form-button,
+  .analysis-picker-list button,
+  .analysis-option,
+  .analysis-option-empty,
+  .landing-steps div,
+  .latest-risk-average,
+  .report-item,
+  .report-modal-close {
+    background: #172033;
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  input,
+  textarea,
+  select,
+  .auth-form input,
+  .field-control input,
+  .field-control:focus-within input,
+  .verify-code-input,
+  .analysis-option small {
+    color: var(--text);
+  }
+
+  input,
+  textarea,
+  .history-search-box input,
+  .form-grid input,
+  .form-grid textarea {
+    background: #172033;
+    border-color: var(--line);
+  }
+
+  input:focus,
+  textarea:focus,
+  .history-search-box input:focus,
+  .form-grid input:focus,
+  .form-grid textarea:focus {
+    background: #172033;
+    border-color: var(--primary);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #94a3b8;
+  }
+
+  .field-control input:-webkit-autofill,
+  .field-control input:-webkit-autofill:hover,
+  .field-control input:-webkit-autofill:focus,
+  .field-control input:-webkit-autofill:active,
+  .login-field-control input:-webkit-autofill,
+  .login-field-control input:-webkit-autofill:hover,
+  .login-field-control input:-webkit-autofill:focus,
+  .login-field-control input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #172033 inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+  }
+
+  .auth-dev-box,
+  .form-hint,
+  .analysis-loading-message,
+  .report-modal-link,
+  .logout-button,
+  .ghost-button,
+  .landing-logo,
+  .landing-score {
+    background: #1e293b;
+    border-color: #475569;
+    color: var(--text);
+  }
+
+  .landing-score {
+    border-color: #273449;
+  }
+
+  .landing-score small,
+  .risk-level p {
+    color: #cbd5e1;
+  }
+
+  .risk-level {
+    background: #172033;
+    border-color: var(--line);
+  }
+
+  .risk-level.safe,
+  .badge-baixo,
+  .history-score.low {
+    background: #12372f;
+    color: #a7f3d0;
+    border-color: #166534;
+  }
+
+  .risk-level.safe strong,
+  .risk-level.safe span {
+    color: #a7f3d0;
+  }
+
+  .risk-level.warning,
+  .badge-medio,
+  .history-score.moderate {
+    background: #422f12;
+    color: #fde68a;
+    border-color: #854d0e;
+  }
+
+  .risk-level.warning strong,
+  .risk-level.warning span {
+    color: #fde68a;
+  }
+
+  .risk-level.danger,
+  .badge-alto,
+  .history-score.high {
+    background: #431f1a;
+    color: #fed7aa;
+    border-color: #9a3412;
+  }
+
+  .risk-level.danger strong,
+  .risk-level.danger span {
+    color: #fed7aa;
+  }
+
+  .risk-level.critical,
+  .badge-critico,
+  .history-score.critical {
+    background: #451a1a;
+    color: #fecaca;
+    border-color: #991b1b;
+  }
+
+  .risk-level.critical strong,
+  .risk-level.critical span {
+    color: #fecaca;
+  }
+
+  .badge {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .table-wrap td {
+    border-top-color: var(--line);
+  }
+
+  .chart-help-box {
+    background: #172033;
+    border-color: var(--line);
+  }
+
+  .chart-help-box strong {
+    color: var(--text);
+  }
+
+  .chart-help-box p {
+    color: #cbd5e1;
+  }
+
+  .report-view-button {
+    background: #172033;
+    border: 1px solid var(--line);
+    color: var(--primary);
+  }
+
+  .report-modal .card,
+  .recommendation {
+    background: #172033;
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  .score-ring {
+    border-color: #334155;
+  }
+
+  .analysis-picker-list button:hover,
+  .analysis-option:hover,
+  .analysis-option:focus,
+  .filter-pills button:hover,
+  .report-view-button:hover,
+  .copy-id-button:hover,
+  .clear-form-button:hover {
+    background: #243047;
+  }
+
+  .report-modal-backdrop,
+  .analysis-loading-overlay,
+  .sidebar-backdrop {
+    background: rgba(2, 6, 23, 0.72);
+  }
+
+  .recharts-text {
+    fill: var(--muted);
+  }
+
+  .recharts-cartesian-grid line {
+    stroke: #334155;
+  }
+
+  .field-group.field-error .field-control,
+  .field-error .field-control,
+  .verify-code-error .verify-code-input,
+  .verify-code-error .verify-code-input:focus {
+    background: #291b25 !important;
+  }
+
+  @media (max-width: 1100px) {
+    .mobile-menu-button,
+    .mobile-menu-button:hover {
+      background: linear-gradient(135deg, #172033, #1e293b);
+      border-color: #475569;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .latest-table tr {
+      background: #172033;
+      border-color: var(--line);
+    }
+  }
+}

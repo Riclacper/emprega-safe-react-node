@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { login } from "../services/authService";
 import logo from "../assets/logo.png";
@@ -82,7 +82,7 @@ export default function Login() {
           <label className="field-group">
             <span>E-mail</span>
 
-            <div className="field-control">
+            <div className="field-control login-field-control">
               <Mail size={19} />
 
               <input
@@ -99,7 +99,7 @@ export default function Login() {
           <label className="field-group">
             <span>Senha</span>
 
-            <div className="field-control">
+            <div className="field-control login-field-control login-password-control">
               <LockKeyhole size={19} />
 
               <input
@@ -129,6 +129,11 @@ export default function Login() {
           <button className="primary-button auth-submit" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </button>
+
+          <Link to="/" className="secondary-button auth-back-button">
+            <ArrowLeft size={18} />
+            Voltar
+          </Link>
 
           <p className="auth-switch">
             Ainda não tem conta? <Link to="/register">Criar conta</Link>

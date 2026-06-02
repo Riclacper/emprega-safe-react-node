@@ -4,7 +4,9 @@ const { validateAnalysisPayload } = require("../utils/validators");
 
 async function listAnalyses(req, res) {
   try {
-    const analyses = await Analysis.find().sort({ createdAt: -1 }).limit(200);
+    const analyses = await Analysis.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(200);
     return res.json(analyses);
   } catch (error) {
     return res.status(500).json({
@@ -52,6 +54,7 @@ async function getAnalysis(req, res) {
   try {
     const analysis = await Analysis.findOne({
       externalId: req.params.externalId,
+      user: req.user._id,
     });
 
     if (!analysis) {

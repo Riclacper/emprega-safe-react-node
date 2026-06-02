@@ -1,0 +1,18 @@
+{
+  "name": "emprega-safe-react-node",
+  "version": "2.1.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:unit && npm run test:security && npm run test:ai",
+    "test:all": "npm test && npm run build && npm run test:e2e && npm run test:secrets && npm run audit",
+    "test:unit": "npm --prefix backend run test:unit",
+    "test:security": "npm --prefix backend run test:security",
+    "test:e2e": "npm --prefix frontend run test:e2e",
+    "test:e2e:ui": "npm --prefix frontend run test:e2e:ui",
+    "test:ai": "npm --prefix backend run test:ai",
+    "test:ai:live": "npm --prefix backend run test:ai:live",
+    "test:secrets": "node scripts/check-secrets.js",
+    "build": "npm --prefix frontend run build",
+    "audit": "npm --prefix backend audit --audit-level=critical && npm --prefix frontend audit --audit-level=critical"
+  }
+}

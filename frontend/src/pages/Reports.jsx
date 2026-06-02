@@ -27,7 +27,6 @@ export default function Reports() {
   const [selectedReport, setSelectedReport] = useState(null);
   const analysisPickerRef = useRef(null);
   const [emailLoading, setEmailLoading] = useState(false);
-  const [emailMessage, setEmailMessage] = useState("");
   const [emailError, setEmailError] = useState("");
   const messageTimeoutRef = useRef(null);
 
@@ -227,13 +226,12 @@ export default function Reports() {
   }
 
   async function handleSendReportEmail(report) {
-    setEmailMessage("");
     setEmailError("");
     setEmailLoading(true);
 
     try {
       await sendReportEmail(report._id);
-      setEmailMessage("E-mail enviado com sucesso.");
+      closeReportModal();
     } catch (err) {
       setEmailError(err.message || "Não foi possível enviar o e-mail.");
     } finally {
@@ -243,13 +241,11 @@ export default function Reports() {
 
   function openReportModal(report) {
     setSelectedReport(report);
-    setEmailMessage("");
     setEmailError("");
   }
 
   function closeReportModal() {
     setSelectedReport(null);
-    setEmailMessage("");
     setEmailError("");
     setEmailLoading(false);
   }
@@ -518,12 +514,6 @@ export default function Reports() {
                 >
                   {emailLoading ? "Enviando..." : "Enviar por e-mail"}
                 </button>
-
-                {emailMessage && (
-                  <div className="alert-success">
-                    E-mail enviado com sucesso.
-                  </div>
-                )}
 
                 {emailError && <div className="alert-error">{emailError}</div>}
               </div>

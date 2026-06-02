@@ -34,7 +34,6 @@ export default function AnalyzeJob() {
     setError("");
 
     if (!form.title.trim() || !form.description.trim()) {
-      setError("Preencha os campos obrigatórios para continuar.");
       return;
     }
 
@@ -154,6 +153,7 @@ export default function AnalyzeJob() {
           <label>
             Moeda
             <select
+              className="analysis-currency-select"
               value={form.currency}
               onChange={(e) => update("currency", e.target.value)}
             >

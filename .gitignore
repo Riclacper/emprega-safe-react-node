@@ -10,6 +10,9 @@ node_modules/
 dist/
 build/
 coverage/
+artifacts/
+playwright-report/
+test-results/
 
 # logs
 *.log

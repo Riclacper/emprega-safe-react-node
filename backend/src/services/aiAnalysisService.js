@@ -59,21 +59,27 @@ Descrição: ${payload.description}
 `;
 
   try {
-    const completion = await aiClient.chat.completions.create({
-      model:
-        provider === "openrouter"
-          ? process.env.OPENROUTER_MODEL || "mistralai/mistral-7b-instruct:free"
-          : process.env.OPENAI_MODEL || "gpt-4.1-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Responda somente JSON válido. Avalie golpes, phishing, cobrança indevida, engenharia social, solicitação de dados sensíveis e inconsistência do recrutador.",
-        },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.2,
-    });
+    const completion = await aiClient.chat.completions.create(
+      {
+        model:
+          provider === "openrouter"
+            ? process.env.OPENROUTER_MODEL || "mistralai/mistral-7b-instruct:free"
+            : process.env.OPENAI_MODEL || "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Responda somente JSON válido. Avalie golpes, phishing, cobrança indevida, engenharia social, solicitação de dados sensíveis e inconsistência do recrutador.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+      },
+      {
+        timeout: Number(process.env.AI_TIMEOUT_MS || 45000),
+        maxRetries: 0,
+      },
+    );
 
     const raw = completion.choices?.[0]?.message?.content || "";
     console.log("Resposta bruta da IA:", raw);

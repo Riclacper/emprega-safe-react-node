@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("node:crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const {
@@ -6,7 +7,7 @@ const {
   sendPasswordResetEmail,
 } = require("../services/emailService");
 function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 }
 
 function generateToken(user) {
@@ -199,8 +200,8 @@ async function forgotPassword(req, res) {
       Isso evita exposição de contas cadastradas.
     */
     if (!user) {
-      return res.status(404).json({
-        message: "Insira o e-mail cadastrado.",
+      return res.json({
+        message: "Código de redefinição enviado para o e-mail cadastrado.",
       });
     }
 

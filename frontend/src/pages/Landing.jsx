@@ -59,7 +59,7 @@ export default function Landing() {
         </div>
 
         <div className="landing-preview-card">
-          <span>EXEMPLO DE RESULTADO TESTE</span>
+          <span>EXEMPLO DE RESULTADO</span>
 
           <div className="landing-score">
             <strong>73</strong>

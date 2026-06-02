@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const {
   login,
   register,
@@ -12,12 +13,28 @@ const { authRequired } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/verify", verify);
+const authenticationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Muitas tentativas. Aguarde alguns minutos." },
+});
 
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+const codeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Muitas tentativas. Aguarde alguns minutos." },
+});
+
+router.post("/register", authenticationLimiter, register);
+router.post("/login", authenticationLimiter, login);
+router.post("/verify", codeLimiter, verify);
+
+router.post("/forgot-password", codeLimiter, forgotPassword);
+router.post("/reset-password", codeLimiter, resetPassword);
 
 router.get("/me", authRequired, me);
 

@@ -9,7 +9,8 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Landing page pública com apresentação do sistema.
 - Cadastro de usuário com nome, e-mail e senha.
 - Login com e-mail e senha.
-- Verificação de acesso por código de 6 dígitos enviado por e-mail.
+- Verificação de acesso por código de 6 dígitos enviado por e-mail, com campos
+  individuais e suporte a copiar e colar.
 - Recuperação de senha por código enviado por e-mail.
 - Sessão protegida com JWT.
 - Encerramento de sessão por logout.
@@ -22,15 +23,22 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Suporte a salários em Real, Dólar e Euro.
 - Exportação do resultado da análise em PDF.
 - Dashboard com métricas, gráficos e últimas análises.
-- Histórico de análises com busca, filtros, paginação e opção de visualizar relatório.
+- Histórico de análises com busca, filtros, paginação, relatório detalhado e
+  exportação em PDF.
 - Cópia do ID da análise para vincular denúncias.
 - Registro de denúncias de vagas suspeitas.
 - Busca de análise existente no formulário de denúncia.
 - Preenchimento automático de empresa, link, motivo e detalhes ao selecionar uma análise.
 - Listagem de denúncias recentes.
+- Envio de denúncia por e-mail diretamente pela interface.
 - Página Sobre com explicação do projeto, pontuação e objetivo do sistema.
 - Layout responsivo com menu mobile.
+- Tema claro ou escuro aplicado automaticamente conforme a preferência do
+  dispositivo.
 - Persistência dos dados no MongoDB Atlas.
+- Suítes automatizadas de testes unitários, segurança, E2E, acessibilidade e
+  comparação de regras com IA.
+- Pipeline de qualidade no GitHub Actions.
 
 ## Stack
 
@@ -47,6 +55,11 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 ```txt
 emprega-safe-react-node/
 ├── backend/
+│   ├── scripts/
+│   │   ├── evaluate-ai.js
+│   │   ├── seed-hybrid-analyses.js
+│   │   └── seed-professional-analyses.js
+│   ├── tests/
 │   ├── src/
 │   │   ├── config/
 │   │   ├── controllers/
@@ -62,23 +75,31 @@ emprega-safe-react-node/
 │   ├── .env.example
 │   ├── package.json
 │   └── render.yaml
-└── frontend/
-    ├── src/
-    │   ├── assets/
-    │   ├── components/
-    │   ├── context/
-    │   ├── hooks/
-    │   ├── pages/
-    │   ├── routes/
-    │   ├── services/
-    │   ├── styles/
-    │   ├── utils/
-    │   ├── App.jsx
-    │   └── main.jsx
-    ├── .env
-    ├── .env.example
-    ├── package.json
-    └── netlify.toml
+├── frontend/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── styles/
+│   │   ├── utils/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── tests/
+│   ├── .env
+│   ├── .env.example
+│   ├── package.json
+│   ├── netlify.toml
+│   └── playwright.config.js
+├── scripts/
+│   └── check-secrets.js
+├── .github/workflows/
+│   └── quality.yml
+├── TESTING.md
+└── package.json
 ```
 
 ## Páginas do frontend
@@ -141,6 +162,11 @@ A análise funciona em modo local ou híbrido.
 
 A IA não substitui as regras. Ela complementa a avaliação e ajuda a interpretar contexto, negações e descrições mais longas.
 
+O resultado salvo registra o modo usado (`rules` ou `hybrid`), a pontuação
+local, a pontuação da IA e a diferença entre as duas avaliações. Pisos de
+segurança locais continuam sendo aplicados quando a resposta da IA entra em
+conflito com sinais fortes de fraude.
+
 ## Classificação das vagas
 
 Cada vaga recebe uma pontuação de risco de 0 a 100. Quanto maior a pontuação, maior o risco.
@@ -190,6 +216,7 @@ AI_PROVIDER=openrouter
 OPENROUTER_API_KEY=sua_chave
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=openrouter/free
+AI_TIMEOUT_MS=45000
 ```
 
 Também é possível usar outro modelo compatível com OpenRouter, desde que esteja disponível para a sua conta.
@@ -201,6 +228,7 @@ AI_ENABLED=true
 AI_PROVIDER=openai
 OPENAI_API_KEY=sua_chave
 OPENAI_MODEL=gpt-4.1-mini
+AI_TIMEOUT_MS=45000
 ```
 
 Para desativar IA:
@@ -244,6 +272,7 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=openrouter/free
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
+AI_TIMEOUT_MS=45000
 ```
 
 > Para Gmail, use senha de app do Google. Não use a senha normal da conta.
@@ -285,22 +314,23 @@ VITE_API_URL=https://sua-api.onrender.com/api
 
 | Método | Rota                       | Descrição                       |
 | ------ | -------------------------- | ------------------------------- |
-| GET    | `/api/analyses`            | Lista análises registradas      |
+| GET    | `/api/analyses`            | Lista análises do usuário autenticado |
 | POST   | `/api/analyses`            | Cria uma nova análise de vaga   |
-| GET    | `/api/analyses/:externalId`| Consulta uma análise específica |
+| GET    | `/api/analyses/:externalId`| Consulta uma análise pertencente ao usuário |
 
 ### Denúncias
 
 | Método | Rota           | Descrição                   |
 | ------ | -------------- | --------------------------- |
-| GET    | `/api/reports` | Lista denúncias registradas |
+| GET    | `/api/reports` | Lista denúncias do usuário autenticado |
 | POST   | `/api/reports` | Cria uma nova denúncia      |
+| POST   | `/api/reports/:id/send-email` | Envia uma denúncia por e-mail |
 
 ### Estatísticas
 
 | Método | Rota         | Descrição                     |
 | ------ | ------------ | ----------------------------- |
-| GET    | `/api/stats` | Retorna métricas do dashboard |
+| GET    | `/api/stats` | Retorna métricas do dashboard do usuário |
 
 ## Banco de dados
 
@@ -426,12 +456,28 @@ http://localhost:5173
 
 ## Scripts úteis
 
+### Raiz do projeto
+
+```bash
+npm run test:all
+npm test
+npm run build
+npm run test:secrets
+npm run audit
+```
+
 ### Backend
 
 ```bash
 npm run dev
 npm start
 npm run seed
+npm run seed:analyses -- usuario@exemplo.com=100
+npm run seed:analyses:hybrid -- usuario@exemplo.com=20
+npm run test:unit
+npm run test:security
+npm run test:ai
+npm run test:ai:live
 ```
 
 ### Frontend
@@ -440,7 +486,72 @@ npm run seed
 npm run dev
 npm run build
 npm run preview
+npm run test:e2e
+npm run test:e2e:ui
 ```
+
+## Dados demonstrativos
+
+O backend possui seeds opcionais para preencher o histórico sem apagar análises
+existentes. Os lotes são idempotentes: executar novamente o mesmo comando não
+duplica registros.
+
+### Análises com regras locais
+
+```bash
+cd backend
+npm run seed:analyses -- usuario@exemplo.com=100
+```
+
+### Análises híbridas com IA
+
+```bash
+cd backend
+npm run seed:analyses:hybrid -- usuario@exemplo.com=20
+```
+
+O seed híbrido exige `AI_ENABLED=true` e uma chave válida do provedor. Cada
+registro é salvo somente quando a IA participa da avaliação. Esse comando pode
+consumir créditos ou cotas do provedor configurado.
+
+É possível preencher mais de uma conta no mesmo comando:
+
+```bash
+npm run seed:analyses -- usuario1@exemplo.com=80 usuario2@exemplo.com=20
+```
+
+> Os seeds modificam o MongoDB configurado em `backend/.env`. Use apenas em
+> ambientes controlados e não envie senhas ou chaves como argumentos.
+
+## Testes profissionais
+
+O projeto possui cinco grupos complementares de validação:
+
+1. Testes unitários das regras locais, classificações e validação de payloads.
+2. Testes de API e segurança para Helmet, CORS, JWT, limite de payload, rate
+   limit e isolamento de dados entre usuários.
+3. Testes E2E com Playwright em desktop e celular, incluindo acessibilidade com
+   axe-core e estados visuais da interface.
+4. Cenários versionados para comparar vagas confiáveis, suspeitas e críticas,
+   com modo opcional de consulta à IA real.
+5. Pipeline no GitHub Actions com build, testes, auditoria de dependências e
+   verificação de segredos.
+
+Para instalar o navegador usado pelo Playwright na primeira execução:
+
+```bash
+cd frontend
+npx playwright install chromium
+cd ..
+```
+
+Para executar a validação completa antes de uma entrega:
+
+```bash
+npm run test:all
+```
+
+Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 
 ## Segurança
 
@@ -452,6 +563,15 @@ npm run preview
 - O código de verificação expira em 10 minutos.
 - O código de recuperação de senha expira em 10 minutos.
 - Rotas internas são protegidas por JWT.
+- Análises, denúncias e estatísticas são isoladas por usuário autenticado.
+- A API aplica cabeçalhos de segurança com Helmet.
+- O backend restringe origens permitidas por CORS e limita payloads JSON.
+- A API possui limite global de requisições e limites menores para login,
+  verificação e recuperação de senha.
+- Códigos temporários são gerados com recursos criptográficos do Node.js.
+- A recuperação de senha não revela se um e-mail está cadastrado.
+- O repositório possui varredura automatizada para evitar versionamento de
+  segredos e arquivos `.env`.
 - Ao encerrar sessão, os dados locais de autenticação são removidos.
 - Em produção, configure corretamente o `CORS_ORIGIN`.
 - A IA deve ser tratada como apoio à análise, não como decisão absoluta.
@@ -481,6 +601,7 @@ EMAIL_PASS
 EMAIL_FROM
 AI_ENABLED
 AI_PROVIDER
+AI_TIMEOUT_MS
 OPENROUTER_API_KEY
 OPENROUTER_BASE_URL
 OPENROUTER_MODEL
@@ -505,6 +626,7 @@ VITE_API_URL=https://sua-api.onrender.com/api
 ## Observações de uso
 
 - O dashboard usa os dados salvos no MongoDB para montar métricas e gráficos.
+- Dashboard, histórico e denúncias exibem apenas dados do usuário autenticado.
 - A categoria **Potencialmente fraudulenta** é exibida de forma resumida como **Fraudulenta** em gráficos e filtros.
 - O ID da análise pode ser copiado no histórico para vincular uma denúncia a uma análise específica.
 - Na tela de denúncias, o usuário pode buscar uma análise existente e preencher os campos automaticamente.
@@ -523,4 +645,7 @@ Versão atual com:
 - dashboard com gráficos;
 - histórico com filtros, paginação e relatório;
 - denúncias vinculáveis por ID da análise;
-- persistência no MongoDB Atlas.
+- persistência no MongoDB Atlas;
+- isolamento dos dados por usuário;
+- seeds idempotentes para demonstração com regras locais ou modo híbrido;
+- testes profissionais e workflow de qualidade no GitHub Actions.

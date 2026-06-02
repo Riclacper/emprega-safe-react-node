@@ -5,6 +5,11 @@ function pushSignal(signals, points, reason, evidence) {
   signals.push({ points, reason, evidence: evidence || null });
 }
 
+function includesTerm(text, term) {
+  const escaped = normalize(term).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|\\W)${escaped}(?=\\W|$)`).test(text);
+}
+
 function analyzeByRules(payload) {
   const title = normalize(payload.title);
   const company = normalize(payload.company);
@@ -20,8 +25,17 @@ function analyzeByRules(payload) {
   const urgencyTerms = ["urgente", "contratacao imediata", "contratação imediata", "ganhos garantidos", "lucro rapido", "lucro rápido", "aprovacao imediata", "aprovação imediata"];
   const suspiciousDomains = ["bit.ly", "tinyurl", "encurtador", "wa.me", "t.me", "telegram", "whatsapp"];
   const genericEmailDomains = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com"];
+  const hasSuspiciousDomain = suspiciousDomains.some((domain) => link.includes(domain));
+  const contactDomain = contact.includes("@") ? contact.split("@")[1] || "" : "";
+  const hasGenericEmail = genericEmailDomains.includes(contactDomain);
+  const deniesPayment = [
+    "nao solicita pagamento",
+    "nao solicita pagamentos",
+    "nao cobra",
+    "sem cobranca",
+  ].some((term) => fullText.includes(normalize(term)));
 
-  if (paymentTerms.some((term) => fullText.includes(normalize(term)))) {
+  if (!deniesPayment && paymentTerms.some((term) => includesTerm(fullText, term))) {
     pushSignal(signals, 35, "Há indício de cobrança, pagamento, curso obrigatório ou transferência para participar do processo seletivo.");
   }
 
@@ -35,27 +49,30 @@ function analyzeByRules(payload) {
     pushSignal(signals, 6, "O salário informado está abaixo do esperado e precisa de conferência com a descrição da vaga.");
   }
 
-  if (sensitiveTerms.some((term) => fullText.includes(normalize(term)))) {
+  if (sensitiveTerms.some((term) => includesTerm(fullText, term))) {
     pushSignal(signals, 20, "A vaga solicita dados pessoais sensíveis antes de uma validação formal da empresa.");
   }
 
-  if (urgencyTerms.some((term) => fullText.includes(normalize(term)))) {
+  if (urgencyTerms.some((term) => includesTerm(fullText, term))) {
     pushSignal(signals, 12, "O texto usa gatilhos de urgência ou promessas irreais para pressionar o candidato.");
   }
 
   if (!link) {
     pushSignal(signals, 8, "A vaga não informa link verificável da empresa ou do anúncio.");
-  } else if (suspiciousDomains.some((domain) => link.includes(domain))) {
+  } else if (hasSuspiciousDomain) {
     pushSignal(signals, 12, "O link informado usa encurtadores ou canais menos confiáveis.", link);
   }
 
   if (contact.includes("@")) {
-    const domain = contact.split("@")[1] || "";
-    if (genericEmailDomains.includes(domain)) {
-      pushSignal(signals, 10, "O recrutamento usa e-mail genérico em vez de domínio corporativo.", domain);
+    if (hasGenericEmail) {
+      pushSignal(signals, 10, "O recrutamento usa e-mail genérico em vez de domínio corporativo.", contactDomain);
     }
   } else if (contact && !/^\+?\d{10,13}$/.test(contact.replace(/\D/g, ""))) {
     pushSignal(signals, 6, "O contato informado não segue um padrão profissional claro.");
+  }
+
+  if (hasSuspiciousDomain && hasGenericEmail) {
+    pushSignal(signals, 8, "A combinação de e-mail genérico com link encurtado reduz a rastreabilidade do recrutador.");
   }
 
   const weakTextSignals = ["!!!", "clique agora", "apenas hoje", "sem entrevista", "renda extra garantida"];
