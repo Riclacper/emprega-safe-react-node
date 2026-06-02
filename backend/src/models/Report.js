@@ -21,4 +21,15 @@ const reportSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+reportSchema.index(
+  { user: 1, analysis: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      user: { $type: "objectId" },
+      analysis: { $type: "objectId" },
+    },
+  },
+);
+
 module.exports = mongoose.model("Report", reportSchema);

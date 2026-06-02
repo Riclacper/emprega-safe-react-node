@@ -53,6 +53,20 @@ test("JSON body limit rejects oversized requests", async () => {
   assert.equal(response.status, 413);
 });
 
+test("registration rejects a common email domain typo", async () => {
+  const response = await request(app).post("/api/auth/register").send({
+    name: "Pessoa Teste",
+    email: "nbh@hgh.vom",
+    password: "senha-segura",
+  });
+
+  assert.equal(response.status, 400);
+  assert.equal(
+    response.body.message,
+    "Verifique o domínio do e-mail. Você quis dizer .com?",
+  );
+});
+
 test("login endpoint limits repeated attempts", async () => {
   let response;
 

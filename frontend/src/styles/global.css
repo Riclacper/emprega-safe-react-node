@@ -1273,7 +1273,8 @@ button.analyze-submit {
   padding: 28px 12px;
 }
 
-.pagination-bar {
+.pagination-bar,
+.pagination-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1333,8 +1334,10 @@ button.analyze-submit {
 }
 
 @media (max-width: 720px) {
-  .pagination-bar {
+  .pagination-bar,
+  .pagination-footer {
     display: grid;
+    gap: 14px;
   }
 
   .pagination-actions {

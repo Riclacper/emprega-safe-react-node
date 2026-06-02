@@ -8,6 +8,8 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 
 - Landing page pública com apresentação do sistema.
 - Cadastro de usuário com nome, e-mail e senha.
+- Validação de formato do e-mail e aviso para erros comuns de digitação no
+  domínio durante o cadastro.
 - Login com e-mail e senha.
 - Verificação de acesso por código de 6 dígitos enviado por e-mail, com campos
   individuais e suporte a copiar e colar.
@@ -17,6 +19,7 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Controle de sessão no frontend.
 - Análise de confiabilidade de vagas por regras locais.
 - Análise complementar com IA, quando ativada.
+- Bloqueio de análise duplicada da mesma vaga para o mesmo usuário.
 - Classificação da vaga por nível de risco.
 - Exibição dos motivos identificados na análise.
 - Recomendação objetiva para o candidato.
@@ -29,6 +32,7 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
   detalhado, com contraste adaptado ao tema do dispositivo.
 - Cópia do ID da análise para vincular denúncias.
 - Registro de denúncias de vagas suspeitas.
+- Bloqueio de denúncia duplicada para a mesma análise e o mesmo usuário.
 - Busca de análise existente no formulário de denúncia.
 - Preenchimento automático de empresa, link, motivo e detalhes ao selecionar uma análise.
 - Listagem de denúncias recentes.
@@ -476,6 +480,8 @@ npm start
 npm run seed
 npm run seed:analyses -- usuario@exemplo.com=100
 npm run seed:analyses:hybrid -- usuario@exemplo.com=20
+npm run cleanup:duplicate-reports -- usuario@exemplo.com --apply
+npm run backfill:analysis-fingerprints -- --apply
 npm run test:unit
 npm run test:security
 npm run test:ai

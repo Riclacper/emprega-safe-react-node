@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
 import logo from "../assets/logo.png";
 import { registerUser } from "../services/authService";
+import { validateEmail } from "../utils/emailValidation";
 
 const initialForm = {
   name: "",
@@ -45,8 +46,12 @@ export default function Register() {
 
     if (!form.email.trim()) {
       errors.email = "Informe seu e-mail.";
-    } else if (!form.email.includes("@")) {
-      errors.email = "Informe um e-mail válido.";
+    } else {
+      const emailValidation = validateEmail(form.email);
+
+      if (!emailValidation.valid) {
+        errors.email = emailValidation.message;
+      }
     }
 
     if (!form.password.trim()) {

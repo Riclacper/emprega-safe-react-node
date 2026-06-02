@@ -6,6 +6,7 @@ const {
   sendVerificationEmail,
   sendPasswordResetEmail,
 } = require("../services/emailService");
+const { validateEmail } = require("../utils/emailValidation");
 function generateCode() {
   return crypto.randomInt(100000, 1000000).toString();
 }
@@ -32,9 +33,11 @@ async function register(req, res) {
       });
     }
 
-    if (!email.includes("@")) {
+    const emailValidation = validateEmail(email);
+
+    if (!emailValidation.valid) {
       return res.status(400).json({
-        message: "Informe um e-mail válido.",
+        message: emailValidation.message,
       });
     }
 

@@ -65,7 +65,7 @@ function validateReportPayload(body) {
     valid: true,
     payload: {
       analysisId,
-      company: company || "Não informada",
+      company,
       link,
       reason,
       details,

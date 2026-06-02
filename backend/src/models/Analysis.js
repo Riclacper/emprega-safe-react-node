@@ -13,6 +13,7 @@ const analysisSchema = new mongoose.Schema(
   {
     externalId: { type: String, required: true, unique: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    fingerprint: { type: String, default: null },
     title: { type: String, required: true },
     company: { type: String, default: "" },
     salary: { type: Number, default: 0 },
@@ -49,6 +50,17 @@ const analysisSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
+);
+
+analysisSchema.index(
+  { user: 1, fingerprint: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      user: { $type: "objectId" },
+      fingerprint: { $type: "string" },
+    },
+  },
 );
 
 module.exports = mongoose.model("Analysis", analysisSchema);

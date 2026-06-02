@@ -47,3 +47,26 @@ test("verification uses six fields, supports paste and returns to login", async 
   await page.getByRole("button", { name: "Voltar para login" }).click();
   await expect(page).toHaveURL("/login");
 });
+
+test("registration rejects a common email domain typo before calling the API", async ({
+  page,
+}) => {
+  let registerRequests = 0;
+
+  await page.route("**/api/auth/register", (route) => {
+    registerRequests += 1;
+    return route.fulfill({ status: 201, json: { message: "Conta criada." } });
+  });
+
+  await page.goto("/register");
+  await page.getByPlaceholder("Digite seu nome").fill("Pessoa Teste");
+  await page.getByPlaceholder("Digite seu e-mail").fill("nbh@hgh.vom");
+  await page.getByPlaceholder("Mínimo 6 caracteres").fill("senha-segura");
+  await page.getByPlaceholder("Repita sua senha").fill("senha-segura");
+  await page.getByRole("button", { name: "Criar conta" }).click();
+
+  await expect(
+    page.getByText("Verifique o domínio do e-mail. Você quis dizer .com?"),
+  ).toBeVisible();
+  expect(registerRequests).toBe(0);
+});

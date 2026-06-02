@@ -7,6 +7,8 @@ const User = require("../models/User");
 const { sendReportEmail } = require("../services/emailService");
 const mongoose = require("mongoose");
 
+const DUPLICATE_REPORT_MESSAGE = "Esta vaga já foi denunciada por este usuário.";
+
 async function listReports(req, res) {
   try {
     const reports = await Report.find({ user: req.user._id })
@@ -54,6 +56,18 @@ async function createReport(req, res) {
       });
     }
 
+    if (
+      analysis &&
+      (await Report.exists({
+        user: req.user._id,
+        analysis: analysis._id,
+      }))
+    ) {
+      return res.status(409).json({
+        message: DUPLICATE_REPORT_MESSAGE,
+      });
+    }
+
     const reason =
       validation.payload.reason ||
       `Denúncia vinculada à análise ${validation.payload.analysisId}`;
@@ -88,8 +102,7 @@ async function createReport(req, res) {
 
     if (error.code === 11000) {
       return res.status(409).json({
-        message:
-          "Erro de índice duplicado no banco. Verifique índices antigos da collection reports.",
+        message: DUPLICATE_REPORT_MESSAGE,
       });
     }
 
