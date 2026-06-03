@@ -54,9 +54,29 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - **Backend:** Node.js, Express, MongoDB, Mongoose, JWT, bcryptjs, Nodemailer
 - **Banco de dados:** MongoDB Atlas
 - **Autenticação:** JWT, senha criptografada com bcrypt e verificação por e-mail
-- **E-mail:** Nodemailer com Gmail via senha de app
+- **E-mail:** Nodemailer com SMTP configurável; em produção, Brevo é recomendado
 - **IA opcional:** OpenRouter ou OpenAI
-- **Deploy sugerido:** Render para API e Netlify/Vercel para frontend
+- **Deploy:** Render para API e Netlify para frontend
+
+## Ambiente online
+
+O projeto está preparado para funcionar com frontend e backend separados:
+
+- **Frontend:** Netlify
+- **Backend/API:** Render
+- **Banco de dados:** MongoDB Atlas
+- **E-mail transacional:** SMTP via Brevo recomendado para produção
+
+Exemplo de URLs em produção:
+
+```txt
+Frontend: https://empregasafe.netlify.app
+API: https://empregasafe-api.onrender.com/api
+Health check: https://empregasafe-api.onrender.com/health
+```
+
+> No plano gratuito do Render, a API pode hibernar após períodos sem uso. Para
+> apresentações, acesse o sistema alguns minutos antes para reativar o serviço.
 
 ## Estrutura do projeto
 
@@ -149,6 +169,9 @@ emprega-safe-react-node/
 8. O usuário é redirecionado para `/verify`.
 9. Após informar o código correto, o backend emite o JWT.
 10. O frontend salva a sessão no navegador e libera o acesso à área protegida.
+
+Se o serviço SMTP ficar indisponível, o backend retorna erro controlado sem
+derrubar a API e remove o código temporário gerado.
 
 ### Recuperação de senha
 
@@ -271,10 +294,12 @@ ADMIN_EMAIL=admin@empregasafe.com
 ADMIN_PASSWORD=troque_por_uma_senha_forte
 
 EMAIL_ENABLED=true
-EMAIL_SERVICE=gmail
-EMAIL_USER=seu_email@gmail.com
-EMAIL_PASS=sua_senha_de_app_do_google
-EMAIL_FROM=EmpregaSafe <seu_email@gmail.com>
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=2525
+EMAIL_SECURE=false
+EMAIL_USER=seu_login_smtp_da_brevo
+EMAIL_PASS=sua_chave_smtp_da_brevo
+EMAIL_FROM=EmpregaSafe <email_verificado_na_brevo>
 
 AI_ENABLED=false
 AI_PROVIDER=openrouter
@@ -286,7 +311,46 @@ OPENAI_MODEL=gpt-4.1-mini
 AI_TIMEOUT_MS=45000
 ```
 
-> Para Gmail, use senha de app do Google. Não use a senha normal da conta.
+### Configuração de e-mail
+
+O backend usa Nodemailer e permite configurar qualquer SMTP por variáveis de
+ambiente. Para produção no Render Free, recomenda-se Brevo com porta `2525`,
+pois provedores de hospedagem podem bloquear portas SMTP tradicionais como
+`465` e `587`.
+
+Exemplo recomendado para Brevo:
+
+```env
+EMAIL_ENABLED=true
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=2525
+EMAIL_SECURE=false
+EMAIL_USER=seu_login_smtp_da_brevo
+EMAIL_PASS=sua_chave_smtp_da_brevo
+EMAIL_FROM=EmpregaSafe <email_verificado_na_brevo>
+```
+
+O `EMAIL_USER` deve ser o login SMTP informado pela Brevo, e o `EMAIL_PASS`
+deve ser uma chave SMTP da Brevo. Não use a senha da conta Brevo nem uma chave
+API comum.
+
+Para Gmail em ambiente local, use senha de app do Google:
+
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_SECURE=true
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASS=sua_senha_de_app_do_google
+EMAIL_FROM=EmpregaSafe <seu_email@gmail.com>
+```
+
+Para desativar temporariamente o envio de códigos em ambiente de
+desenvolvimento:
+
+```env
+EMAIL_ENABLED=false
+```
 
 ## Variáveis de ambiente — Frontend
 
@@ -307,6 +371,65 @@ Exemplo em produção:
 ```env
 VITE_API_URL=https://sua-api.onrender.com/api
 ```
+
+## Deploy
+
+### Backend no Render
+
+Configuração recomendada:
+
+```txt
+Root Directory: backend
+Build Command: npm install
+Start Command: npm start
+Runtime: Node
+```
+
+Variáveis principais:
+
+```env
+NODE_ENV=production
+NODE_VERSION=20
+PORT=3000
+MONGODB_URI=sua_string_do_mongodb_atlas
+JWT_SECRET=sua_chave_jwt_forte
+JWT_EXPIRES_IN=1h
+CORS_ORIGIN=https://empregasafe.netlify.app
+REGISTRATION_AUDIT_RETENTION_DAYS=90
+REGISTRATION_AUDIT_HASH_SECRET=sua_chave_exclusiva_para_auditoria
+
+EMAIL_ENABLED=true
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=2525
+EMAIL_SECURE=false
+EMAIL_USER=seu_login_smtp_da_brevo
+EMAIL_PASS=sua_chave_smtp_da_brevo
+EMAIL_FROM=EmpregaSafe <email_verificado_na_brevo>
+
+AI_ENABLED=false
+```
+
+O endpoint `/health` pode ser usado para validar se a API e o MongoDB estão
+ativos.
+
+### Frontend no Netlify
+
+Configuração recomendada:
+
+```txt
+Base directory: frontend
+Build command: npm run build
+Publish directory: frontend/dist
+```
+
+Variável obrigatória:
+
+```env
+VITE_API_URL=https://empregasafe-api.onrender.com/api
+```
+
+Após obter a URL final do Netlify, configure `CORS_ORIGIN` no Render com o
+domínio do frontend publicado.
 
 ## Rotas principais da API
 
@@ -628,7 +751,8 @@ Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 - Use `REGISTRATION_AUDIT_HASH_SECRET` exclusivo em produção.
 - Configure `TRUST_PROXY_HOPS=1` apenas quando a API estiver atrás de um proxy
   confiável, como o proxy do provedor de deploy.
-- Use senha de app para envio de e-mail via Gmail.
+- Use provedor SMTP transacional em produção, como Brevo, com remetente
+  verificado e chave SMTP própria.
 - Não envie senhas por e-mail.
 - As senhas são armazenadas com hash usando `bcryptjs`.
 - O código de verificação expira em 10 minutos.
@@ -647,52 +771,6 @@ Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 - Em produção, configure corretamente o `CORS_ORIGIN`.
 - A IA deve ser tratada como apoio à análise, não como decisão absoluta.
 - O usuário deve validar empresas e vagas em canais oficiais antes de enviar documentos ou dados pessoais.
-
-## Deploy
-
-### Render — Backend
-
-Use o arquivo `backend/render.yaml` ou configure manualmente:
-
-- **Root Directory:** `backend`
-- **Build Command:** `npm install`
-- **Start Command:** `npm start`
-
-Configure as variáveis de ambiente no painel do Render:
-
-```txt
-MONGODB_URI
-JWT_SECRET
-JWT_EXPIRES_IN
-CORS_ORIGIN
-EMAIL_ENABLED
-EMAIL_SERVICE
-EMAIL_USER
-EMAIL_PASS
-EMAIL_FROM
-AI_ENABLED
-AI_PROVIDER
-AI_TIMEOUT_MS
-OPENROUTER_API_KEY
-OPENROUTER_BASE_URL
-OPENROUTER_MODEL
-OPENAI_API_KEY
-OPENAI_MODEL
-```
-
-### Netlify/Vercel — Frontend
-
-Configure:
-
-- **Root Directory:** `frontend`
-- **Build Command:** `npm run build`
-- **Publish Directory:** `dist`
-
-Variável obrigatória:
-
-```env
-VITE_API_URL=https://sua-api.onrender.com/api
-```
 
 ## Observações de uso
 
