@@ -170,7 +170,21 @@ async function login(req, res) {
   user.verificationExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   await user.save();
-  await sendVerificationEmail(user.email, code);
+
+  try {
+    await sendVerificationEmail(user.email, code);
+  } catch (error) {
+    console.error("Falha ao enviar código de verificação:", error.message);
+
+    user.verificationCode = null;
+    user.verificationExpires = null;
+    await user.save();
+
+    return res.status(503).json({
+      message:
+        "Não foi possível enviar o código por e-mail. Tente novamente em alguns instantes.",
+    });
+  }
 
   return res.json({
     message: "Código enviado para o e-mail cadastrado.",
