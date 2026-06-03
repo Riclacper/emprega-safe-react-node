@@ -197,7 +197,7 @@ export default function Verify() {
 
           <button
             type="button"
-            className="secondary-button auth-back-button"
+            className="report-clear-button auth-back-button"
             onClick={handleBackToLogin}
           >
             <ArrowLeft size={18} />
