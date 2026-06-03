@@ -3789,6 +3789,11 @@ body,
   box-shadow: none !important;
 }
 
+.auth-form .auth-back-button {
+  max-width: none !important;
+  width: 100% !important;
+}
+
 @media (max-width: 900px) {
   .report-form-actions {
     grid-template-columns: 1fr !important;
