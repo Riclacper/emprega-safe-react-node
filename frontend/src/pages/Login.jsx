@@ -130,7 +130,7 @@ export default function Login() {
             {loading ? "Entrando..." : "Entrar"}
           </button>
 
-          <Link to="/" className="secondary-button auth-back-button">
+          <Link to="/" className="report-clear-button auth-back-button">
             <ArrowLeft size={18} />
             Voltar
           </Link>
