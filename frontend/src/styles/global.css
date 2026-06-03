@@ -2197,7 +2197,8 @@ td .risk-badge,
 }
 
 .auth-back-button {
-  width: 100%;
+  width: 100% !important;
+  max-width: none !important;
   min-height: 56px;
   display: inline-flex;
   align-items: center;
