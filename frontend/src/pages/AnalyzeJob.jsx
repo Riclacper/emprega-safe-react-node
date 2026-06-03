@@ -1,9 +1,7 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useState } from "react";
-import AnalysisResult from "../components/AnalysisResult.jsx";
+import AnalysisPdfReport from "../components/AnalysisPdfReport.jsx";
 import { createAnalysis } from "../services/analysisService";
-import { formatCurrency } from "../utils/formatters";
+import { exportAnalysisPdf } from "../utils/pdfExport";
 
 const initialForm = {
   title: "",
@@ -25,6 +23,13 @@ export default function AnalyzeJob() {
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function clearForm() {
+    setForm(initialForm);
+    setSubmitted(false);
+    setError("");
+    setLoadingMessage("");
   }
 
   async function handleSubmit(event) {
@@ -67,15 +72,7 @@ export default function AnalyzeJob() {
   }
 
   async function exportPdf() {
-    const element = document.getElementById("analysis-result-pdf");
-    if (!element) return;
-    const canvas = await html2canvas(element, { scale: 2 });
-    const image = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const width = 190;
-    const height = (canvas.height * width) / canvas.width;
-    pdf.addImage(image, "PNG", 10, 10, width, height);
-    pdf.save(`EmpregaSafe-${analysis.externalId}.pdf`);
+    await exportAnalysisPdf(analysis, `EmpregaSafe-${analysis.externalId}.pdf`);
   }
 
   function onlyNumbers(value) {
@@ -190,29 +187,35 @@ export default function AnalyzeJob() {
           </label>
 
           {error && <div className="form-soft-error full">{error}</div>}
-          <button className="primary-button analyze-submit" disabled={loading}>
-            {loading ? "Analisando..." : "Analisar vaga"}
-          </button>
+
+          <div className="report-form-actions full">
+            <button
+              type="button"
+              className="report-clear-button"
+              onClick={clearForm}
+              disabled={loading}
+            >
+              Limpar campos
+            </button>
+
+            <button
+              className="primary-button analyze-submit report-submit-button"
+              disabled={loading}
+            >
+              {loading ? "Analisando..." : "Analisar vaga"}
+            </button>
+          </div>
         </form>
       </section>
 
       <div className="page-stack">
         {analysis ? (
           <>
-            <AnalysisResult analysis={analysis} />
-            <section className="card mini-summary">
-              <h3>Resumo da vaga</h3>
-              <p>
-                <strong>Empresa:</strong> {analysis.company || "Não informada"}
-              </p>
-              <p>
-                <strong>Salário:</strong>{" "}
-                {formatCurrency(analysis.salary, analysis.currency)}{" "}
-              </p>
-              <button className="secondary-button" onClick={exportPdf}>
-                Baixar relatório em PDF{" "}
-              </button>
-            </section>
+            <AnalysisPdfReport analysis={analysis} id="analysis-result-pdf" />
+
+            <button className="history-pdf-button" onClick={exportPdf}>
+              Baixar relatório em PDF
+            </button>
           </>
         ) : (
           <section className="card empty-state empty-result">

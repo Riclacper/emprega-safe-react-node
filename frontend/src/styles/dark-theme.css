@@ -144,6 +144,24 @@
     color: var(--text);
   }
 
+  .history-pdf-button {
+    background: linear-gradient(135deg, #4f63ff, #7c8cff);
+    color: #ffffff;
+    box-shadow: 0 18px 38px rgba(79, 99, 255, 0.34);
+  }
+
+  .report-clear-button {
+    background: #172033 !important;
+    border-color: #4f63ff !important;
+    color: var(--primary-dark) !important;
+    box-shadow: 0 12px 28px rgba(79, 99, 255, 0.22) !important;
+  }
+
+  .report-clear-button:hover {
+    background: #1e293b !important;
+    box-shadow: 0 16px 32px rgba(79, 99, 255, 0.28) !important;
+  }
+
   .landing-score {
     border-color: #273449;
   }
@@ -242,6 +260,21 @@
     background: #172033;
     border-color: var(--line);
     color: var(--text);
+  }
+
+  .analysis-pdf-header,
+  .analysis-pdf-meta,
+  .analysis-pdf-ai,
+  .analysis-pdf-footer {
+    background: #172033;
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  .analysis-pdf-header p,
+  .analysis-pdf-meta span,
+  .analysis-pdf-footer {
+    color: #cbd5e1;
   }
 
   .score-ring {

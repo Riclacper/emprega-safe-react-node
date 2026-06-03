@@ -5,7 +5,7 @@ export default function AnalysisResult({ analysis }) {
   if (!analysis) return null;
 
   return (
-    <section className="card result-card" id="analysis-result-pdf">
+    <section className="card result-card">
       <div className="result-header">
         <div>
           <span className="eyebrow">Resultado da análise</span>

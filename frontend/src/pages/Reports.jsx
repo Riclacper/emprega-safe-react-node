@@ -142,7 +142,6 @@ export default function Reports() {
     setSubmitted(true);
 
     if (!form.analysisId.trim()) {
-      setError("Selecione uma análise para registrar a denúncia.");
       return;
     }
 
@@ -294,16 +293,14 @@ export default function Reports() {
         </p>
 
         <form onSubmit={handleSubmit} className="form-grid">
-          <label
-            className={`analysis-picker-wrap ${
-              submitted && !form.analysisId.trim() ? "field-error" : ""
-            }`}
-            ref={analysisPickerRef}
-          >
+          <label className="analysis-picker-wrap" ref={analysisPickerRef}>
             <span className="label-text">
               ID da análise <strong className="required">*</strong>
             </span>
             <input
+              className={
+                submitted && !form.analysisId.trim() ? "field-error" : ""
+              }
               value={form.analysisId}
               onFocus={() => setShowAnalysisOptions(true)}
               onChange={(e) => {
@@ -315,13 +312,8 @@ export default function Reports() {
                   setShowAnalysisOptions(false);
                 }
               }}
-              placeholder="Clique para buscar por empresa, vaga ou ID"
+              placeholder="Clique para buscar"
             />
-            {submitted && !form.analysisId.trim() && (
-              <small className="field-error-message">
-                Selecione uma análise para registrar a denúncia.
-              </small>
-            )}
             {showAnalysisOptions && (
               <div className="analysis-options">
                 {filteredAnalyses.length > 0 ? (
@@ -505,14 +497,22 @@ export default function Reports() {
                 </p>
               )}
 
-              <div className="report-modal-actions">
+              <div className="report-modal-actions report-email-actions">
                 <button
                   type="button"
-                  className="report-modal-link"
+                  className="history-pdf-button"
                   onClick={() => handleSendReportEmail(selectedReport)}
                   disabled={emailLoading}
                 >
                   {emailLoading ? "Enviando..." : "Enviar por e-mail"}
+                </button>
+
+                <button
+                  type="button"
+                  className="report-clear-button report-modal-close-action"
+                  onClick={closeReportModal}
+                >
+                  Fechar
                 </button>
 
                 {emailError && <div className="alert-error">{emailError}</div>}

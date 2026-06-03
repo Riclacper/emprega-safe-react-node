@@ -1,15 +1,15 @@
 const { sanitizeText, isValidUrl } = require("./normalize");
 
 function validateAnalysisPayload(body) {
-  const title = String(body.title || "").trim();
-  const company = String(body.company || "").trim();
+  const title = sanitizeText(body.title, 150);
+  const company = sanitizeText(body.company, 150);
   const salary = Number(body.salary || 0);
   const currency = String(body.currency || "BRL")
     .trim()
     .toUpperCase();
-  const contact = String(body.contact || "").trim();
-  const link = String(body.link || "").trim();
-  const description = String(body.description || "").trim();
+  const contact = sanitizeText(body.contact, 150);
+  const link = sanitizeText(body.link, 500);
+  const description = sanitizeText(body.description, 5000);
 
   if (!title) {
     return {
@@ -25,6 +25,20 @@ function validateAnalysisPayload(body) {
     };
   }
 
+  if (!Number.isFinite(salary) || salary < 0) {
+    return {
+      valid: false,
+      message: "Informe um salário válido.",
+    };
+  }
+
+  if (link && !isValidUrl(link)) {
+    return {
+      valid: false,
+      message: "Informe um link válido para a vaga.",
+    };
+  }
+
   const allowedCurrencies = ["BRL", "USD", "EUR"];
 
   return {
@@ -32,7 +46,7 @@ function validateAnalysisPayload(body) {
     payload: {
       title,
       company,
-      salary: Number.isNaN(salary) ? 0 : salary,
+      salary,
       currency: allowedCurrencies.includes(currency) ? currency : "BRL",
       contact,
       link,

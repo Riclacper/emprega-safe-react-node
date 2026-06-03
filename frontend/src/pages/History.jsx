@@ -1,10 +1,9 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useEffect, useMemo, useState } from "react";
-import AnalysisResult from "../components/AnalysisResult.jsx";
+import AnalysisPdfReport from "../components/AnalysisPdfReport.jsx";
 import RiskBadge from "../components/RiskBadge.jsx";
 import { listAnalyses } from "../services/analysisService";
 import { formatCurrency, formatDate, formatTime } from "../utils/formatters";
+import { exportAnalysisPdf } from "../utils/pdfExport";
 
 const PAGE_SIZE = 10;
 
@@ -173,19 +172,12 @@ export default function History() {
   }
 
   async function exportHistoryPdf() {
-    const element = document.getElementById("history-analysis-pdf");
+    if (!selectedAnalysis) return;
 
-    if (!element || !selectedAnalysis) return;
-
-    const canvas = await html2canvas(element, { scale: 2 });
-    const image = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-    const width = 190;
-    const height = (canvas.height * width) / canvas.width;
-
-    pdf.addImage(image, "PNG", 10, 10, width, height);
-    pdf.save(`EmpregaSafe-${selectedAnalysis.externalId}.pdf`);
+    await exportAnalysisPdf(
+      selectedAnalysis,
+      `EmpregaSafe-${selectedAnalysis.externalId}.pdf`,
+    );
   }
 
   function displayClassification(value) {
@@ -357,27 +349,29 @@ export default function History() {
               <div>
                 <span className="eyebrow">Relatório da análise</span>
                 <h2>{selectedAnalysis.title}</h2>
-                <p>
-                  <strong>ID:</strong>{" "}
-                  {selectedAnalysis.externalId ||
-                    selectedAnalysis._id ||
-                    "ID não disponível"}
-                </p>
-                <button
-                  type="button"
-                  className={`copy-id-button ${
-                    copiedId === (selectedAnalysis.externalId || selectedAnalysis._id)
-                      ? "copied"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    copyId(selectedAnalysis.externalId || selectedAnalysis._id)
-                  }
-                >
-                  {copiedId === (selectedAnalysis.externalId || selectedAnalysis._id)
-                    ? "ID copiado"
-                    : "Copiar ID"}
-                </button>
+                <div className="history-report-id-row">
+                  <p>
+                    <strong>ID:</strong>{" "}
+                    {selectedAnalysis.externalId ||
+                      selectedAnalysis._id ||
+                      "ID não disponível"}
+                  </p>
+                  <button
+                    type="button"
+                    className={`copy-id-button ${
+                      copiedId === (selectedAnalysis.externalId || selectedAnalysis._id)
+                        ? "copied"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      copyId(selectedAnalysis.externalId || selectedAnalysis._id)
+                    }
+                  >
+                    {copiedId === (selectedAnalysis.externalId || selectedAnalysis._id)
+                      ? "ID copiado"
+                      : "Copiar ID"}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -389,45 +383,17 @@ export default function History() {
               </button>
             </div>
 
-            <div id="history-analysis-pdf" className="report-modal-content">
-              <AnalysisResult analysis={selectedAnalysis} />
-
-              <section className="card mini-summary">
-                <h3>Resumo da vaga</h3>
-
-                <p>
-                  <strong>Empresa:</strong>{" "}
-                  {selectedAnalysis.company || "Não informada"}
-                </p>
-
-                <p>
-                  <strong>Salário:</strong>{" "}
-                  {formatCurrency(
-                    selectedAnalysis.salary,
-                    selectedAnalysis.currency,
-                  )}
-                </p>
-
-                <p>
-                  <strong>Modo:</strong>{" "}
-                  {selectedAnalysis.analysisMode === "hybrid"
-                    ? "Regras + IA"
-                    : "Regras locais"}
-                </p>
-
-                <p>
-                  <strong>ID da análise:</strong>{" "}
-                  {selectedAnalysis.externalId ||
-                    selectedAnalysis._id ||
-                    "ID não disponível"}{" "}
-                </p>
-              </section>
+            <div className="report-modal-content">
+              <AnalysisPdfReport
+                analysis={selectedAnalysis}
+                id="history-analysis-pdf"
+              />
             </div>
 
             <div className="report-modal-actions">
               <button
                 type="button"
-                className="secondary-button"
+                className="history-pdf-button"
                 onClick={exportHistoryPdf}
               >
                 Baixar relatório em PDF

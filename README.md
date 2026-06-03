@@ -268,7 +268,7 @@ REGISTRATION_AUDIT_HASH_SECRET=sua_chave_exclusiva_para_auditoria
 
 ADMIN_NAME=Administrador
 ADMIN_EMAIL=admin@empregasafe.com
-ADMIN_PASSWORD=123456
+ADMIN_PASSWORD=troque_por_uma_senha_forte
 
 EMAIL_ENABLED=true
 EMAIL_SERVICE=gmail
@@ -494,12 +494,13 @@ A API deve iniciar em:
 http://localhost:3000/api
 ```
 
-O seed cria um usuário administrador com os dados definidos no `.env`:
+O seed cria um usuário administrador com os dados definidos no `.env`.
+Defina uma senha forte para `ADMIN_PASSWORD`; o seed não usa senha padrão.
 
 ```env
 ADMIN_NAME=Administrador
 ADMIN_EMAIL=admin@empregasafe.com
-ADMIN_PASSWORD=123456
+ADMIN_PASSWORD=troque_por_uma_senha_forte
 ```
 
 ### 2. Frontend

@@ -11,10 +11,22 @@ async function authRequired(req, res, next) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("name email role active");
+    const user = await User.findById(decoded.id).select(
+      "name email role active passwordChangedAt",
+    );
 
     if (!user || !user.active) {
       return res.status(401).json({ message: "Usuário inválido ou inativo." });
+    }
+
+    if (user.passwordChangedAt) {
+      const tokenPasswordChangedAt =
+        decoded.passwordChangedAt === undefined ? null : decoded.passwordChangedAt;
+      const currentPasswordChangedAt = new Date(user.passwordChangedAt).getTime();
+
+      if (tokenPasswordChangedAt !== currentPasswordChangedAt) {
+        return res.status(401).json({ message: "Sessão expirada ou inválida." });
+      }
     }
 
     req.user = user;

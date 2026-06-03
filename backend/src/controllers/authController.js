@@ -16,7 +16,15 @@ function generateCode() {
 
 function generateToken(user) {
   return jwt.sign(
-    { id: user._id, name: user.name, email: user.email, role: user.role },
+    {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      passwordChangedAt: user.passwordChangedAt
+        ? new Date(user.passwordChangedAt).getTime()
+        : null,
+    },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "1h" },
   );
@@ -316,6 +324,7 @@ async function resetPassword(req, res) {
     user.passwordResetExpires = null;
     user.verificationCode = null;
     user.verificationExpires = null;
+    user.passwordChangedAt = new Date();
 
     await user.save();
 
@@ -336,4 +345,5 @@ module.exports = {
   me,
   forgotPassword,
   resetPassword,
+  generateToken,
 };

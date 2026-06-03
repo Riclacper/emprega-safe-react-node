@@ -62,6 +62,37 @@ test("validates required analysis fields and normalizes unsupported currency", (
   assert.equal(validation.payload.currency, "BRL");
 });
 
+test("sanitizes analysis payload and rejects unsafe analysis values", () => {
+  const invalidLink = validateAnalysisPayload({
+    title: "Pessoa desenvolvedora",
+    description: "Atividades e requisitos detalhados para a oportunidade.",
+    link: "javascript:alert(1)",
+  });
+
+  assert.equal(invalidLink.valid, false);
+  assert.equal(invalidLink.message, "Informe um link válido para a vaga.");
+
+  const invalidSalary = validateAnalysisPayload({
+    title: "Pessoa desenvolvedora",
+    description: "Atividades e requisitos detalhados para a oportunidade.",
+    salary: -1,
+  });
+
+  assert.equal(invalidSalary.valid, false);
+  assert.equal(invalidSalary.message, "Informe um salário válido.");
+
+  const valid = validateAnalysisPayload({
+    title: `${"x".repeat(200)}`,
+    company: "Empresa Teste",
+    description: "x".repeat(6000),
+    link: "https://empresa.example/vaga",
+  });
+
+  assert.equal(valid.valid, true);
+  assert.equal(valid.payload.title.length, 150);
+  assert.equal(valid.payload.description.length, 5000);
+});
+
 test("sanitizes reports and rejects unsafe links", () => {
   const invalid = validateReportPayload({
     reason: "Possível golpe",

@@ -8,7 +8,13 @@ async function seed() {
 
   const name = process.env.ADMIN_NAME || "Administrador";
   const email = (process.env.ADMIN_EMAIL || "admin@empregasafe.com").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || "123456";
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!password || password.length < 8 || password === "123456") {
+    throw new Error(
+      "ADMIN_PASSWORD deve ser definido com uma senha forte de pelo menos 8 caracteres.",
+    );
+  }
 
   const hash = await bcrypt.hash(password, 10);
   await User.findOneAndUpdate(
