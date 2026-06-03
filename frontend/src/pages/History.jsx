@@ -376,7 +376,7 @@ export default function History() {
 
               <button
                 type="button"
-                className="modal-close-button"
+                className="report-clear-button report-modal-close-action"
                 onClick={() => setSelectedAnalysis(null)}
               >
                 Fechar
