@@ -15,6 +15,7 @@ const initialForm = {
 
 export default function AnalyzeJob() {
   const [form, setForm] = useState(initialForm);
+  const [attachmentName, setAttachmentName] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -27,9 +28,15 @@ export default function AnalyzeJob() {
 
   function clearForm() {
     setForm(initialForm);
+    setAttachmentName("");
     setSubmitted(false);
     setError("");
     setLoadingMessage("");
+  }
+
+  function handleAttachmentChange(event) {
+    const file = event.target.files?.[0];
+    setAttachmentName(file ? file.name : "");
   }
 
   async function handleSubmit(event) {
@@ -166,6 +173,23 @@ export default function AnalyzeJob() {
               onChange={(e) => update("contact", e.target.value)}
               placeholder="E-mail, telefone ou WhatsApp"
             />
+          </label>
+          <label className="analysis-file-field">
+            Arquivo da vaga
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleAttachmentChange}
+              aria-describedby="analysis-file-hint"
+            />
+            <small id="analysis-file-hint">
+              Demonstração de melhoria futura: print da vaga, ainda sem envio.
+            </small>
+            {attachmentName && (
+              <small className="analysis-file-name">
+                Selecionado: {attachmentName}
+              </small>
+            )}
           </label>
           <label className="full">
             Link da vaga

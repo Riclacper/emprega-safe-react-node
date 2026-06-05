@@ -269,6 +269,23 @@ textarea {
   resize: vertical;
 }
 
+.analysis-file-field input[type="file"] {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.analysis-file-field small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.analysis-file-name {
+  color: var(--primary-dark) !important;
+  word-break: break-word;
+}
+
 .table-wrap {
   width: 100%;
   overflow-x: auto;
