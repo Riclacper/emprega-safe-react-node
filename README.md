@@ -26,8 +26,11 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Exibição dos motivos identificados na análise.
 - Recomendação objetiva para o candidato.
 - Suporte a salários em Real, Dólar e Euro.
+- Campo demonstrativo para anexar print da vaga como melhoria futura, sem envio
+  do arquivo para a API.
 - Exportação do resultado da análise em PDF.
-- Dashboard com métricas, gráficos e últimas análises.
+- Dashboard com métricas, gráficos, ranking agregado de empresas mais
+  denunciadas e últimas análises.
 - Histórico de análises com busca, filtros, paginação, relatório detalhado e
   exportação em PDF.
 - Destaque visual dos níveis de risco no dashboard, histórico e relatório
@@ -43,6 +46,8 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 - Layout responsivo com menu mobile.
 - Tema claro ou escuro aplicado automaticamente conforme a preferência do
   dispositivo.
+- Idioma base `pt-BR` configurado no HTML para acessibilidade e melhor
+  reconhecimento de tradução automática pelo navegador.
 - Persistência dos dados no MongoDB Atlas.
 - Suítes automatizadas de testes unitários, segurança, E2E, acessibilidade e
   comparação de regras com IA.
@@ -464,7 +469,7 @@ domínio do frontend publicado.
 
 | Método | Rota         | Descrição                     |
 | ------ | ------------ | ----------------------------- |
-| GET    | `/api/stats` | Retorna métricas do dashboard do usuário |
+| GET    | `/api/stats` | Retorna métricas do dashboard do usuário e ranking agregado de empresas denunciadas |
 
 ## Banco de dados
 
@@ -758,7 +763,9 @@ Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 - O código de verificação expira em 10 minutos.
 - O código de recuperação de senha expira em 10 minutos.
 - Rotas internas são protegidas por JWT.
-- Análises, denúncias e estatísticas são isoladas por usuário autenticado.
+- Análises, denúncias e métricas pessoais são isoladas por usuário autenticado.
+- O ranking de empresas mais denunciadas é agregado e não expõe usuário, e-mail,
+  ID de análise ou detalhes individuais da denúncia.
 - A API aplica cabeçalhos de segurança com Helmet.
 - O backend restringe origens permitidas por CORS e limita payloads JSON.
 - A API possui limite global de requisições e limites menores para login,
@@ -776,6 +783,8 @@ Detalhes adicionais estão em [`TESTING.md`](TESTING.md).
 
 - O dashboard usa os dados salvos no MongoDB para montar métricas e gráficos.
 - Dashboard, histórico e denúncias exibem apenas dados do usuário autenticado.
+- O dashboard também exibe um ranking comunitário agregado de empresas mais
+  denunciadas, preservando a privacidade dos registros individuais.
 - A categoria **Potencialmente fraudulenta** é exibida de forma resumida como **Fraudulenta** em gráficos e filtros.
 - O ID da análise pode ser copiado no histórico para vincular uma denúncia a uma análise específica.
 - Na tela de denúncias, o usuário pode buscar uma análise existente e preencher os campos automaticamente.
@@ -792,6 +801,7 @@ Versão atual com:
 - análise de vagas por regras locais;
 - IA opcional via OpenRouter ou OpenAI;
 - dashboard com gráficos;
+- ranking agregado de empresas mais denunciadas no painel de segurança;
 - histórico com filtros, paginação e relatório;
 - denúncias vinculáveis por ID da análise;
 - persistência no MongoDB Atlas;
