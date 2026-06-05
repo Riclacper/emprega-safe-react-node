@@ -18,9 +18,47 @@ function normalizeClassification(classification) {
 }
 
 async function getStats(req, res) {
-  const [analyses, reports] = await Promise.all([
+  const [analyses, reports, topReportedCompanies] = await Promise.all([
     Analysis.find({ user: req.user._id }),
     Report.find({ user: req.user._id }),
+    Report.aggregate([
+      {
+        $project: {
+          company: {
+            $trim: {
+              input: { $ifNull: ["$company", "Não informada"] },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          companyKey: { $toLower: "$company" },
+        },
+      },
+      {
+        $match: {
+          company: { $ne: "" },
+          companyKey: { $ne: "não informada" },
+        },
+      },
+      {
+        $group: {
+          _id: "$companyKey",
+          company: { $first: "$company" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1, company: 1 } },
+      { $limit: 5 },
+      {
+        $project: {
+          _id: 0,
+          company: 1,
+          count: 1,
+        },
+      },
+    ]),
   ]);
 
   const stats = analyses.reduce(
@@ -82,6 +120,7 @@ async function getStats(req, res) {
     companiesFlagged: Array.from(flaggedCompanies).filter(Boolean).length,
     classificationChart,
     modeChart,
+    topReportedCompanies,
     averageScore: analyses.length
       ? Math.round(totalScore / analyses.length)
       : 0,

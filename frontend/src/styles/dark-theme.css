@@ -241,6 +241,16 @@
     border-color: var(--line);
   }
 
+  .top-reported-list li {
+    background: #172033;
+    border-color: var(--line);
+  }
+
+  .top-reported-position {
+    background: rgba(52, 87, 255, 0.16);
+    color: #c7d2fe;
+  }
+
   .chart-help-box strong {
     color: var(--text);
   }
