@@ -53,13 +53,11 @@ test("requires an analysis and creates a report with automatically filled vacanc
   await page.goto("/app/denuncias");
   await page.getByRole("button", { name: "Registrar denúncia" }).click();
 
-  await expect(
-    page.getByText("Selecione uma análise para registrar a denúncia.").first(),
-  ).toBeVisible();
+  await expect(page.getByPlaceholder("Clique para buscar")).toHaveClass(
+    /field-error/,
+  );
 
-  await page
-    .getByPlaceholder("Clique para buscar por empresa, vaga ou ID")
-    .click();
+  await page.getByPlaceholder("Clique para buscar").click();
   await page.getByRole("button", { name: /Empresa Teste/ }).click();
 
   await expect(
@@ -127,9 +125,7 @@ test("displays an API warning when the selected vacancy was already reported", a
   });
 
   await page.goto("/app/denuncias");
-  await page
-    .getByPlaceholder("Clique para buscar por empresa, vaga ou ID")
-    .click();
+  await page.getByPlaceholder("Clique para buscar").click();
   await page.getByRole("button", { name: /Empresa Teste/ }).click();
   await page.getByRole("button", { name: "Registrar denúncia" }).click();
 

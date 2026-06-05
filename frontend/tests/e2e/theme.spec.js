@@ -186,9 +186,7 @@ test("report form fields remain readable in dark theme", async ({ page }) => {
 
   await page.goto("/app/denuncias");
 
-  const analysisSearch = page.getByPlaceholder(
-    "Clique para buscar por empresa, vaga ou ID",
-  );
+  const analysisSearch = page.getByPlaceholder("Clique para buscar");
   await expect(analysisSearch).toHaveCSS("background-color", "rgb(23, 32, 51)");
 
   const details = page.getByPlaceholder(

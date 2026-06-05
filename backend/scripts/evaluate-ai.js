@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const { analyzeByRules } = require("../src/services/riskRulesService");
 const fixtures = require("../tests/ai/fixtures");
 
