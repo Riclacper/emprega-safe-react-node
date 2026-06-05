@@ -269,7 +269,15 @@ textarea {
   resize: vertical;
 }
 
+.analysis-file-field {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .analysis-file-field input[type="file"] {
+  min-height: 47px;
   cursor: pointer;
   font-weight: 600;
 }
@@ -3049,6 +3057,10 @@ body,
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
   gap: 18px;
   align-items: start;
+}
+
+.analyze-form-grid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.75fr);
 }
 
 /* =========================================================

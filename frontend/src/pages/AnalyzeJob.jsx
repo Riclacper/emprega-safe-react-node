@@ -124,7 +124,7 @@ export default function AnalyzeJob() {
           Campos marcados com <strong>*</strong> são obrigatórios. Os demais
           campos ajudam a melhorar a precisão da análise.
         </p>
-        <form onSubmit={handleSubmit} className="form-grid">
+        <form onSubmit={handleSubmit} className="form-grid analyze-form-grid">
           <label>
             Título da vaga *
             <input
@@ -174,9 +174,10 @@ export default function AnalyzeJob() {
               placeholder="E-mail, telefone ou WhatsApp"
             />
           </label>
-          <label className="analysis-file-field">
-            Arquivo da vaga
+          <div className="analysis-file-field">
+            <label htmlFor="job-attachment-demo">Arquivo da vaga</label>
             <input
+              id="job-attachment-demo"
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={handleAttachmentChange}
@@ -190,7 +191,7 @@ export default function AnalyzeJob() {
                 Selecionado: {attachmentName}
               </small>
             )}
-          </label>
+          </div>
           <label className="full">
             Link da vaga
             <input
