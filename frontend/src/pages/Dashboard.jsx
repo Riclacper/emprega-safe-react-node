@@ -153,6 +153,41 @@ export default function Dashboard() {
           </span>
         </div>
       </section>
+
+      <section className="card top-reported-card">
+        <div className="top-reported-header">
+          <div>
+            <span className="eyebrow">Alertas da comunidade</span>
+            <h2>Empresas mais denunciadas</h2>
+            <p>
+              Ranking agregado de denúncias registradas no sistema. Os dados
+              individuais dos usuários permanecem privados.
+            </p>
+          </div>
+        </div>
+
+        {stats.topReportedCompanies?.length ? (
+          <ol className="top-reported-list">
+            {stats.topReportedCompanies.map((item, index) => (
+              <li key={`${item.company}-${index}`}>
+                <span className="top-reported-position">{index + 1}</span>
+                <div>
+                  <strong>{item.company || "Empresa não informada"}</strong>
+                  <small>
+                    {item.count} denúncia{item.count === 1 ? "" : "s"}{" "}
+                    registrada{item.count === 1 ? "" : "s"}
+                  </small>
+                </div>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="top-reported-empty">
+            Ainda não há volume suficiente de denúncias para formar um ranking.
+          </p>
+        )}
+      </section>
+
       <section className="dashboard-grid">
         <article className="card chart-card">
           <div className="chart-card-header">
@@ -286,40 +321,6 @@ export default function Dashboard() {
             </p>
           </div>
         </article>
-      </section>
-
-      <section className="card top-reported-card">
-        <div className="top-reported-header">
-          <div>
-            <span className="eyebrow">Alertas da comunidade</span>
-            <h2>Empresas mais denunciadas</h2>
-            <p>
-              Ranking agregado de denúncias registradas no sistema. Os dados
-              individuais dos usuários permanecem privados.
-            </p>
-          </div>
-        </div>
-
-        {stats.topReportedCompanies?.length ? (
-          <ol className="top-reported-list">
-            {stats.topReportedCompanies.map((item, index) => (
-              <li key={`${item.company}-${index}`}>
-                <span className="top-reported-position">{index + 1}</span>
-                <div>
-                  <strong>{item.company || "Empresa não informada"}</strong>
-                  <small>
-                    {item.count} denúncia{item.count === 1 ? "" : "s"}{" "}
-                    registrada{item.count === 1 ? "" : "s"}
-                  </small>
-                </div>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="top-reported-empty">
-            Ainda não há volume suficiente de denúncias para formar um ranking.
-          </p>
-        )}
       </section>
 
       <section className="card">
