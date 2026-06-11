@@ -4,6 +4,10 @@ Sistema web para analisar a confiabilidade de vagas de emprego, identificar sina
 
 O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinheiro ou avancem em processos seletivos com sinais de baixa confiabilidade.
 
+## Equipe
+
+Juliana Reis, Pedro Asafe, Matheus de Souza, Nycolle Jenifer, Patrícia Betânia, Beatriz Pereira and Ricardo Lacerda.
+
 ## Funcionalidades principais
 
 - Landing page pública com apresentação do sistema.
