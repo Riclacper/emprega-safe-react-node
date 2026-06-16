@@ -9,6 +9,10 @@
 
 ---
 
+## TEAM
+
+- Juliana Reis, Pedro Asafe, Matheus de Souza, Nycolle Jenifer, Patrícia Betânia, Beatriz Pereira and Ricardo Lacerda.
+
 ## Main Features
 
 - Public landing page presenting the system.
