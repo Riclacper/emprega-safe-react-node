@@ -8,23 +8,26 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import logo from "../assets/logo.png";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const items = [
-  { to: "/app", label: "Painel de segurança", icon: BarChart3, end: true },
-  { to: "/app/analisar", label: "Analisar vaga", icon: ClipboardCheck },
-  { to: "/app/historico", label: "Histórico", icon: History },
-  { to: "/app/denuncias", label: "Denúncias", icon: FileWarning },
-  { to: "/app/sobre", label: "Sobre", icon: AlertTriangle },
+  { to: "/app", labelKey: "sidebar.dashboard", icon: BarChart3, end: true },
+  { to: "/app/analisar", labelKey: "sidebar.analyze", icon: ClipboardCheck },
+  { to: "/app/historico", labelKey: "sidebar.history", icon: History },
+  { to: "/app/denuncias", labelKey: "sidebar.reports", icon: FileWarning },
+  { to: "/app/sobre", labelKey: "sidebar.about", icon: AlertTriangle },
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
+  const { t } = useLanguage();
+
   return (
     <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
       <button
         type="button"
         className="sidebar-close"
         onClick={onClose}
-        aria-label="Fechar menu"
+        aria-label={t("common.closeMenu")}
       >
         ×
       </button>
@@ -46,7 +49,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               onClick={onClose}
             >
               <Icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           );
         })}
@@ -54,8 +57,8 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
       <div className="sidebar-card">
         <ShieldCheck size={20} />
-        <strong>Análise inteligente</strong>
-        <p>Regras automáticas com apoio de IA para avaliar sinais de risco.</p>
+        <strong>{t("sidebar.cardTitle")}</strong>
+        <p>{t("sidebar.cardText")}</p>
       </div>
     </aside>
   );

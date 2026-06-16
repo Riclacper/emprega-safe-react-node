@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AnalysisPdfReport from "../components/AnalysisPdfReport.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { createAnalysis } from "../services/analysisService";
 import { exportAnalysisPdf } from "../utils/pdfExport";
 
@@ -14,6 +15,13 @@ const initialForm = {
 };
 
 export default function AnalyzeJob() {
+  const {
+    language,
+    t,
+    translateClassification,
+    translateReason,
+    translateRecommendation,
+  } = useLanguage();
   const [form, setForm] = useState(initialForm);
   const [attachmentName, setAttachmentName] = useState("");
   const [analysis, setAnalysis] = useState(null);
@@ -51,11 +59,11 @@ export default function AnalyzeJob() {
 
     setLoading(true);
     setAnalysis(null);
-    setLoadingMessage("Analisando vaga com regras locais e IA...");
+    setLoadingMessage(t("analyze.loadingLocalAi"));
 
     const delayMessage = setTimeout(() => {
       setLoadingMessage(
-        "A análise com IA ainda está em andamento. Isso pode levar até 30 segundos.",
+        t("analyze.loadingDelay"),
       );
     }, 6000);
 
@@ -70,7 +78,7 @@ export default function AnalyzeJob() {
       setForm(initialForm);
       setSubmitted(false);
     } catch (err) {
-      setError(err.message || "Erro ao analisar vaga.");
+      setError(err.message || t("analyze.error"));
     } finally {
       clearTimeout(delayMessage);
       setLoading(false);
@@ -79,7 +87,13 @@ export default function AnalyzeJob() {
   }
 
   async function exportPdf() {
-    await exportAnalysisPdf(analysis, `EmpregaSafe-${analysis.externalId}.pdf`);
+    await exportAnalysisPdf(analysis, `EmpregaSafe-${analysis.externalId}.pdf`, {
+      t,
+      language,
+      translateClassification,
+      translateReason,
+      translateRecommendation,
+    });
   }
 
   function onlyNumbers(value) {
@@ -117,65 +131,64 @@ export default function AnalyzeJob() {
   return (
     <div className="page-stack two-column">
       <section className="card">
-        <span className="eyebrow">Nova análise</span>
-        <h2>Analisar confiabilidade da vaga</h2>
+        <span className="eyebrow">{t("analyze.eyebrow")}</span>
+        <h2>{t("analyze.title")}</h2>
 
         <p className="form-hint">
-          Campos marcados com <strong>*</strong> são obrigatórios. Os demais
-          campos ajudam a melhorar a precisão da análise.
+          {t("analyze.hint")}
         </p>
         <form onSubmit={handleSubmit} className="form-grid analyze-form-grid">
           <label>
-            Título da vaga *
+            {t("analyze.jobTitle")}
             <input
               className={fieldHasError("title") ? "field-error" : ""}
               value={form.title}
               onChange={(e) => update("title", e.target.value)}
-              placeholder="Ex: Auxiliar Administrativo"
+              placeholder={t("analyze.jobTitlePlaceholder")}
             />
           </label>
           <label>
-            Empresa
+            {t("common.company")}
             <input
               value={form.company}
               onChange={(e) => update("company", e.target.value)}
-              placeholder="Nome da empresa"
+              placeholder={t("analyze.companyPlaceholder")}
             />
           </label>
           <label>
-            Salário
+            {t("common.salary")}
             <input
               value={form.salary}
               onChange={(e) =>
                 update("salary", formatSalaryInput(e.target.value))
               }
-              placeholder="Ex: 2.500,00"
+              placeholder={t("analyze.salaryPlaceholder")}
               inputMode="numeric"
             />
           </label>
 
           <label>
-            Moeda
+            {t("analyze.currency")}
             <select
               className="analysis-currency-select"
               value={form.currency}
               onChange={(e) => update("currency", e.target.value)}
             >
-              <option value="BRL">Real brasileiro — R$</option>
-              <option value="USD">Dólar — US$</option>
-              <option value="EUR">Euro — €</option>
+              <option value="BRL">{t("analyze.brl")}</option>
+              <option value="USD">{t("analyze.usd")}</option>
+              <option value="EUR">{t("analyze.eur")}</option>
             </select>
           </label>
           <label>
-            Contato
+            {t("common.contact")}
             <input
               value={form.contact}
               onChange={(e) => update("contact", e.target.value)}
-              placeholder="E-mail, telefone ou WhatsApp"
+              placeholder={t("analyze.contactPlaceholder")}
             />
           </label>
           <div className="analysis-file-field">
-            <label htmlFor="job-attachment-demo">Arquivo da vaga</label>
+            <label htmlFor="job-attachment-demo">{t("analyze.attachment")}</label>
             <input
               id="job-attachment-demo"
               type="file"
@@ -184,16 +197,16 @@ export default function AnalyzeJob() {
               aria-describedby="analysis-file-hint"
             />
             <small id="analysis-file-hint">
-              Demonstração de melhoria futura: print da vaga, ainda sem envio.
+              {t("analyze.attachmentHint")}
             </small>
             {attachmentName && (
               <small className="analysis-file-name">
-                Selecionado: {attachmentName}
+                {t("common.selected")} {attachmentName}
               </small>
             )}
           </div>
           <label className="full">
-            Link da vaga
+            {t("analyze.jobLink")}
             <input
               value={form.link}
               onChange={(e) => update("link", e.target.value)}
@@ -201,13 +214,13 @@ export default function AnalyzeJob() {
             />
           </label>
           <label className="full">
-            Descrição da vaga *
+            {t("analyze.description")}
             <textarea
               className={fieldHasError("description") ? "field-error" : ""}
               value={form.description}
               onChange={(e) => update("description", e.target.value)}
               rows={8}
-              placeholder="Cole aqui a descrição completa da vaga..."
+              placeholder={t("analyze.descriptionPlaceholder")}
             />
           </label>
 
@@ -220,14 +233,14 @@ export default function AnalyzeJob() {
               onClick={clearForm}
               disabled={loading}
             >
-              Limpar campos
+              {t("common.clearFields")}
             </button>
 
             <button
               className="primary-button analyze-submit report-submit-button"
               disabled={loading}
             >
-              {loading ? "Analisando..." : "Analisar vaga"}
+              {loading ? t("analyze.analyzing") : t("analyze.analyzeButton")}
             </button>
           </div>
         </form>
@@ -239,18 +252,17 @@ export default function AnalyzeJob() {
             <AnalysisPdfReport analysis={analysis} id="analysis-result-pdf" />
 
             <button className="history-pdf-button" onClick={exportPdf}>
-              Baixar relatório em PDF
+              {t("common.downloadPdf")}
             </button>
           </>
         ) : (
           <section className="card empty-state empty-result">
-            <h2>Resultado da análise</h2>
+            <h2>{t("analyze.resultTitle")}</h2>
 
             <p>
-              Preencha os campos obrigatórios e clique em{" "}
-              <strong>Analisar vaga</strong>. O sistema mostrará a pontuação de
-              risco, a classificação da vaga, os principais sinais encontrados e
-              uma recomendação para o candidato.
+              {t("analyze.emptyTextStart")}{" "}
+              <strong>{t("analyze.analyzeButton")}</strong>.{" "}
+              {t("analyze.emptyTextEnd")}
             </p>
           </section>
         )}
@@ -260,14 +272,13 @@ export default function AnalyzeJob() {
           <div className="analysis-loading-box">
             <div className="analysis-spinner" />
 
-            <h3>Analisando vaga com IA</h3>
+            <h3>{t("analyze.loadingTitle")}</h3>
 
             <p>
-              O EmpregaSafe está verificando sinais de risco, padrões suspeitos
-              e indícios de fraude.
+              {t("analyze.loadingText")}
             </p>
 
-            <small>Isso pode levar até 30 segundos.</small>
+            <small>{t("analyze.loadingSmall")}</small>
           </div>
         </div>
       )}

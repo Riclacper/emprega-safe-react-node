@@ -50,8 +50,12 @@ Juliana Reis, Pedro Asafe, Matheus de Souza, Nycolle Jenifer, Patrícia Betânia
 - Layout responsivo com menu mobile.
 - Tema claro ou escuro aplicado automaticamente conforme a preferência do
   dispositivo.
-- Idioma base `pt-BR` configurado no HTML para acessibilidade e melhor
-  reconhecimento de tradução automática pelo navegador.
+- Seletor de idioma na interface para alternar entre português e inglês, com
+  preferência salva no navegador.
+- Tradução da interface, menus, formulários, relatórios visuais, mensagens
+  comuns e PDF exportado conforme o idioma escolhido.
+- Atualização automática do atributo `lang` do HTML para acessibilidade e
+  melhor interpretação por navegadores e leitores de tela.
 - Persistência dos dados no MongoDB Atlas.
 - Suítes automatizadas de testes unitários, segurança, E2E, acessibilidade e
   comparação de regras com IA.
@@ -87,6 +91,9 @@ Health check: https://empregasafe-api.onrender.com/health
 > No plano gratuito do Render, a API pode hibernar após períodos sem uso. Para
 > apresentações, acesse o sistema alguns minutos antes para reativar o serviço.
 
+> A seleção de idioma é controlada pelo frontend e salva no navegador. Ela não
+> exige variável adicional no Render para funcionar em produção.
+
 ## Estrutura do projeto
 
 ```txt
@@ -118,6 +125,7 @@ emprega-safe-react-node/
 │   │   ├── components/
 │   │   ├── context/
 │   │   ├── hooks/
+│   │   ├── i18n/
 │   │   ├── pages/
 │   │   ├── routes/
 │   │   ├── services/

@@ -70,12 +70,17 @@ function safeText(value, fallback = "Não informado") {
   return text || fallback;
 }
 
-function analysisId(analysis) {
-  return safeText(analysis?.externalId || analysis?._id, "ID não disponível");
+function analysisId(analysis, i18n) {
+  return safeText(
+    analysis?.externalId || analysis?._id,
+    i18n.t("common.unavailableId"),
+  );
 }
 
-function analysisModeLabel(mode) {
-  return mode === "hybrid" ? "Regras locais + IA" : "Regras locais";
+function analysisModeLabel(mode, i18n) {
+  return mode === "hybrid"
+    ? i18n.t("common.localRulesAi")
+    : i18n.t("common.localRules");
 }
 
 function scoreColor(score) {
@@ -87,13 +92,13 @@ function scoreColor(score) {
   return COLORS.success;
 }
 
-function createdAtLabel(analysis) {
-  const date = formatDate(analysis?.createdAt);
-  const time = formatTime(analysis?.createdAt);
+function createdAtLabel(analysis, i18n) {
+  const date = formatDate(analysis?.createdAt, i18n.language);
+  const time = formatTime(analysis?.createdAt, i18n.language);
 
-  if (!date || date === "-") return "Data não disponível";
+  if (!date || date === "-") return i18n.t("common.notAvailable");
 
-  return time ? `${date} às ${time}` : date;
+  return time ? `${date}${i18n.t("pdf.generatedAtConnector")}${time}` : date;
 }
 
 function setTextColor(pdf, color = COLORS.text) {
@@ -108,29 +113,29 @@ function setFillColor(pdf, color = COLORS.soft) {
   pdf.setFillColor(color[0], color[1], color[2]);
 }
 
-function addFooter(pdf, pageNumber) {
+function addFooter(pdf, pageNumber, i18n) {
   setDrawColor(pdf);
   pdf.line(PAGE.margin, 282, PAGE.width - PAGE.margin, 282);
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   setTextColor(pdf, COLORS.muted);
-  pdf.text("EmpregaSafe - Relatório de análise de confiabilidade", PAGE.margin, 288);
-  pdf.text(`Página ${pageNumber}`, PAGE.width - PAGE.margin, 288, {
+  pdf.text(i18n.t("pdf.footerTitle"), PAGE.margin, 288);
+  pdf.text(i18n.t("pdf.page", { page: pageNumber }), PAGE.width - PAGE.margin, 288, {
     align: "right",
   });
 }
 
-function addPage(pdf, state) {
-  addFooter(pdf, state.page);
+function addPage(pdf, state, i18n) {
+  addFooter(pdf, state.page, i18n);
   pdf.addPage();
   state.page += 1;
   state.y = PAGE.margin + 6;
 }
 
-function ensureSpace(pdf, state, height) {
+function ensureSpace(pdf, state, height, i18n) {
   if (state.y + height <= PAGE.bottom) return false;
-  addPage(pdf, state);
+  addPage(pdf, state, i18n);
   return true;
 }
 
@@ -152,12 +157,12 @@ function drawWrappedText(pdf, text, x, y, maxWidth, options = {}) {
   return y + lines.length * lineHeight;
 }
 
-function drawSectionTitle(pdf, state, title) {
+function drawSectionTitle(pdf, state, title, i18n) {
   if (state.y > PAGE.margin + 2) {
     state.y += SECTION_GAP;
   }
 
-  ensureSpace(pdf, state, 16);
+  ensureSpace(pdf, state, 16, i18n);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(12);
   setTextColor(pdf, COLORS.primaryDark);
@@ -182,7 +187,7 @@ function drawKeyValue(pdf, state, label, value, x, width) {
   return nextY;
 }
 
-function drawHeader(pdf, state, analysis, logoDataUrl) {
+function drawHeader(pdf, state, analysis, logoDataUrl, i18n) {
   const boxHeight = 56;
   const x = PAGE.margin;
   const width = CONTENT_WIDTH;
@@ -205,11 +210,11 @@ function drawHeader(pdf, state, analysis, logoDataUrl) {
 
   pdf.setFontSize(16);
   setTextColor(pdf, COLORS.text);
-  pdf.text("Relatório de análise de confiabilidade", x + 6, state.y + 19);
+  pdf.text(i18n.t("pdf.title"), x + 6, state.y + 19);
 
   drawWrappedText(
     pdf,
-    "Documento gerado para apoiar a avaliação de risco de uma vaga de emprego.",
+    i18n.t("pdf.subtitle"),
     x + 6,
     state.y + 28,
     width - 48,
@@ -228,7 +233,7 @@ function drawHeader(pdf, state, analysis, logoDataUrl) {
   setTextColor(pdf, COLORS.muted);
   pdf.text("ID:", x + 10, metaY + 8);
 
-  const idLines = pdf.splitTextToSize(analysisId(analysis), 108);
+  const idLines = pdf.splitTextToSize(analysisId(analysis, i18n), 108);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8.3);
   setTextColor(pdf, COLORS.primaryDark);
@@ -237,15 +242,15 @@ function drawHeader(pdf, state, analysis, logoDataUrl) {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   setTextColor(pdf, COLORS.muted);
-  pdf.text(createdAtLabel(analysis), x + width - 10, metaY + 8, {
+  pdf.text(createdAtLabel(analysis, i18n), x + width - 10, metaY + 8, {
     align: "right",
   });
 
   state.y += boxHeight;
 }
 
-function drawSummary(pdf, state, analysis) {
-  drawSectionTitle(pdf, state, "Resumo da vaga");
+function drawSummary(pdf, state, analysis, i18n) {
+  drawSectionTitle(pdf, state, i18n.t("pdf.summary"), i18n);
 
   const x = PAGE.margin;
   const width = CONTENT_WIDTH;
@@ -254,7 +259,7 @@ function drawSummary(pdf, state, analysis) {
   const leftX = x + 6;
   const rightX = x + 96;
 
-  ensureSpace(pdf, state, 52);
+  ensureSpace(pdf, state, 52, i18n);
   const boxY = state.y;
 
   setFillColor(pdf);
@@ -264,24 +269,24 @@ function drawSummary(pdf, state, analysis) {
   let leftY = boxY + 10;
   let rightY = boxY + 10;
 
-  leftY = drawKeyValue(pdf, { ...state, y: leftY }, "Vaga", safeText(analysis.title), leftX, colWidth) + rowGap;
-  leftY = drawKeyValue(pdf, { ...state, y: leftY }, "Salário", formatCurrency(analysis.salary, analysis.currency), leftX, colWidth);
+  leftY = drawKeyValue(pdf, { ...state, y: leftY }, tLabel(i18n, "common.job"), safeText(analysis.title, i18n.t("common.notInformed")), leftX, colWidth) + rowGap;
+  leftY = drawKeyValue(pdf, { ...state, y: leftY }, tLabel(i18n, "common.salary"), formatCurrency(analysis.salary, analysis.currency, i18n.language), leftX, colWidth);
 
-  rightY = drawKeyValue(pdf, { ...state, y: rightY }, "Empresa", safeText(analysis.company), rightX, colWidth) + rowGap;
-  rightY = drawKeyValue(pdf, { ...state, y: rightY }, "Modo", analysisModeLabel(analysis.analysisMode), rightX, colWidth);
+  rightY = drawKeyValue(pdf, { ...state, y: rightY }, tLabel(i18n, "common.company"), safeText(analysis.company, i18n.t("common.notInformed")), rightX, colWidth) + rowGap;
+  rightY = drawKeyValue(pdf, { ...state, y: rightY }, tLabel(i18n, "common.mode"), analysisModeLabel(analysis.analysisMode, i18n), rightX, colWidth);
 
   state.y = Math.max(leftY, rightY, boxY + 48) + 8;
 
   const detailRows = [
-    ["Contato", safeText(analysis.contact)],
-    ["Link", safeText(analysis.link)],
+    [tLabel(i18n, "common.contact"), safeText(analysis.contact, i18n.t("common.notInformedMale"))],
+    [tLabel(i18n, "common.link"), safeText(analysis.link, i18n.t("common.notInformedMale"))],
   ];
 
   detailRows.forEach(([label, value]) => {
     const lines = pdf.splitTextToSize(value, 142);
     const height = Math.max(12, lines.length * 5 + 7);
 
-    ensureSpace(pdf, state, height);
+    ensureSpace(pdf, state, height, i18n);
     setFillColor(pdf, [255, 255, 255]);
     setDrawColor(pdf);
     pdf.roundedRect(x, state.y, width, height, 3, 3, "FD");
@@ -300,10 +305,10 @@ function drawSummary(pdf, state, analysis) {
   });
 }
 
-function drawScore(pdf, state, analysis) {
-  drawSectionTitle(pdf, state, "Resultado da análise");
+function drawScore(pdf, state, analysis, i18n) {
+  drawSectionTitle(pdf, state, i18n.t("result.eyebrow"), i18n);
 
-  ensureSpace(pdf, state, 40);
+  ensureSpace(pdf, state, 40, i18n);
 
   const color = scoreColor(analysis.score);
   setFillColor(pdf, [255, 255, 255]);
@@ -327,7 +332,10 @@ function drawScore(pdf, state, analysis) {
   pdf.setFontSize(14);
   setTextColor(pdf, COLORS.text);
   const classification = pdf.splitTextToSize(
-    safeText(analysis.classification, "Classificação não informada"),
+    safeText(
+      i18n.translateClassification(analysis.classification),
+      i18n.t("pdf.classificationMissing"),
+    ),
     134,
   );
   pdf.text(classification.slice(0, 1), PAGE.margin + 36, state.y + 13);
@@ -335,21 +343,25 @@ function drawScore(pdf, state, analysis) {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9.5);
   setTextColor(pdf, COLORS.muted);
-  pdf.text(`Modo usado: ${analysisModeLabel(analysis.analysisMode)}`, PAGE.margin + 36, state.y + 23);
+  pdf.text(
+    `${i18n.t("pdf.usedMode")} ${analysisModeLabel(analysis.analysisMode, i18n)}`,
+    PAGE.margin + 36,
+    state.y + 23,
+  );
 
   state.y += 34;
 }
 
-function drawAiComparison(pdf, state, analysis) {
+function drawAiComparison(pdf, state, analysis, i18n) {
   if (analysis.analysisMode !== "hybrid") return;
 
-  drawSectionTitle(pdf, state, "Comparação com IA");
-  ensureSpace(pdf, state, 24);
+  drawSectionTitle(pdf, state, i18n.t("pdf.aiComparison"), i18n);
+  ensureSpace(pdf, state, 24, i18n);
 
   const items = [
-    `Regras locais: ${analysis.ruleScore ?? 0}/100`,
-    `IA: ${analysis.aiScore ?? "Não disponível"}/100`,
-    `Diferença: ${analysis.scoreDifference ?? 0} ponto(s)`,
+    `${i18n.t("pdf.ruleScore")} ${analysis.ruleScore ?? 0}/100`,
+    `${i18n.t("pdf.aiScore")} ${analysis.aiScore ?? i18n.t("common.notAvailable")}/100`,
+    `${i18n.t("pdf.difference")} ${analysis.scoreDifference ?? 0} ${i18n.t("common.point")}`,
   ];
 
   setFillColor(pdf);
@@ -369,15 +381,18 @@ function drawAiComparison(pdf, state, analysis) {
   state.y += 20;
 }
 
-function drawReasons(pdf, state, analysis) {
+function drawReasons(pdf, state, analysis, i18n) {
   const reasons = analysis.reasons?.length
     ? analysis.reasons
-    : ["Nenhum motivo foi informado para esta análise."];
+    : [i18n.t("pdf.noReason")];
 
-  drawSectionTitle(pdf, state, "Motivos identificados");
+  drawSectionTitle(pdf, state, i18n.t("result.reasons"), i18n);
 
   reasons.forEach((reason, index) => {
-    const reasonText = safeText(reason, "Motivo não informado.");
+    const reasonText = safeText(
+      i18n.translateReason(reason),
+      i18n.t("pdf.reasonMissing"),
+    );
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9.5);
@@ -391,15 +406,15 @@ function drawReasons(pdf, state, analysis) {
       lines.length * lineHeight + paddingTop + paddingBottom,
     );
 
-    const movedToNextPage = ensureSpace(pdf, state, height);
+    const movedToNextPage = ensureSpace(pdf, state, height, i18n);
 
     if (movedToNextPage) {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10.5);
       setTextColor(pdf, COLORS.primaryDark);
-      pdf.text("Motivos identificados (continuação)", PAGE.margin, state.y);
+      pdf.text(i18n.t("pdf.reasonsContinuation"), PAGE.margin, state.y);
       state.y += 9;
-      ensureSpace(pdf, state, height);
+      ensureSpace(pdf, state, height, i18n);
     }
 
     setFillColor(pdf, index % 2 === 0 ? [255, 255, 255] : COLORS.soft);
@@ -425,16 +440,16 @@ function drawReasons(pdf, state, analysis) {
   });
 }
 
-function drawRecommendation(pdf, state, analysis) {
+function drawRecommendation(pdf, state, analysis, i18n) {
   const recommendation = safeText(
-    analysis.recommendation,
-    "Nenhuma recomendação foi informada para esta análise.",
+    i18n.translateRecommendation(analysis.recommendation),
+    i18n.t("pdf.noRecommendation"),
   );
   const lines = pdf.splitTextToSize(recommendation, 166);
   const height = Math.max(28, lines.length * 5 + 16);
 
-  drawSectionTitle(pdf, state, "Recomendação");
-  ensureSpace(pdf, state, height);
+  drawSectionTitle(pdf, state, i18n.t("common.recommendation"), i18n);
+  ensureSpace(pdf, state, height, i18n);
 
   setFillColor(pdf, [238, 242, 255]);
   setDrawColor(pdf, [199, 210, 254]);
@@ -449,14 +464,13 @@ function drawRecommendation(pdf, state, analysis) {
   state.y += height;
 }
 
-function drawDisclaimer(pdf, state) {
-  const text =
-    "Este relatório é um apoio à decisão. Ele não confirma fraude por si só; recomenda-se validar empresa, domínio, canal de contato e condições da vaga antes de compartilhar dados pessoais ou realizar pagamentos.";
+function drawDisclaimer(pdf, state, i18n) {
+  const text = i18n.t("pdf.footer");
   const lines = pdf.splitTextToSize(text, 166);
   const height = lines.length * 4.5 + 12;
 
   state.y += SECTION_GAP;
-  ensureSpace(pdf, state, height);
+  ensureSpace(pdf, state, height, i18n);
   setFillColor(pdf);
   setDrawColor(pdf);
   pdf.roundedRect(PAGE.margin, state.y, CONTENT_WIDTH, height, 4, 4, "FD");
@@ -470,21 +484,73 @@ function drawDisclaimer(pdf, state) {
   state.y += height;
 }
 
-export async function exportAnalysisPdf(analysis, filename) {
+function tLabel(i18n, key) {
+  return i18n.t(key);
+}
+
+function defaultI18n() {
+  return {
+    t: (key, params = {}) => {
+      const fallback = {
+        "common.unavailableId": "ID não disponível",
+        "common.notAvailable": "Não disponível",
+        "common.notInformed": "Não informado",
+        "common.notInformedMale": "Não informado",
+        "common.job": "Vaga",
+        "common.salary": "Salário",
+        "common.company": "Empresa",
+        "common.mode": "Modo",
+        "common.contact": "Contato",
+        "common.link": "Link",
+        "common.localRules": "Regras locais",
+        "common.localRulesAi": "Regras locais + IA",
+        "common.point": "ponto(s)",
+        "common.recommendation": "Recomendação",
+        "pdf.generatedAtConnector": " às ",
+        "pdf.footerTitle": "EmpregaSafe - Relatório de análise de confiabilidade",
+        "pdf.page": `Página ${params.page}`,
+        "pdf.title": "Relatório de análise de confiabilidade",
+        "pdf.subtitle": "Documento gerado para apoiar a avaliação de risco de uma vaga de emprego.",
+        "pdf.summary": "Resumo da vaga",
+        "pdf.classificationMissing": "Classificação não informada",
+        "pdf.usedMode": "Modo usado:",
+        "pdf.aiComparison": "Comparação com IA",
+        "pdf.ruleScore": "Regras locais:",
+        "pdf.aiScore": "IA:",
+        "pdf.difference": "Diferença:",
+        "pdf.noReason": "Nenhum motivo foi informado para esta análise.",
+        "pdf.reasonMissing": "Motivo não informado.",
+        "pdf.reasonsContinuation": "Motivos identificados (continuação)",
+        "pdf.noRecommendation": "Nenhuma recomendação foi informada para esta análise.",
+        "pdf.footer": "Este relatório é um apoio à decisão. Ele não confirma fraude por si só; recomenda-se validar empresa, domínio, canal de contato e condições da vaga antes de compartilhar dados pessoais ou realizar pagamentos.",
+        "result.eyebrow": "Resultado da análise",
+        "result.reasons": "Motivos identificados",
+      };
+
+      return fallback[key] || key;
+    },
+    language: "pt-BR",
+    translateClassification: (value) => value,
+    translateReason: (value) => value,
+    translateRecommendation: (value) => value,
+  };
+}
+
+export async function exportAnalysisPdf(analysis, filename, i18n = defaultI18n()) {
   if (!analysis) return;
 
   const pdf = new jsPDF("p", "mm", "a4");
   const state = { y: PAGE.margin, page: 1 };
   const logoDataUrl = await getLogoDataUrl();
 
-  drawHeader(pdf, state, analysis, logoDataUrl);
-  drawSummary(pdf, state, analysis);
-  drawScore(pdf, state, analysis);
-  drawAiComparison(pdf, state, analysis);
-  drawReasons(pdf, state, analysis);
-  drawRecommendation(pdf, state, analysis);
-  drawDisclaimer(pdf, state);
-  addFooter(pdf, state.page);
+  drawHeader(pdf, state, analysis, logoDataUrl, i18n);
+  drawSummary(pdf, state, analysis, i18n);
+  drawScore(pdf, state, analysis, i18n);
+  drawAiComparison(pdf, state, analysis, i18n);
+  drawReasons(pdf, state, analysis, i18n);
+  drawRecommendation(pdf, state, analysis, i18n);
+  drawDisclaimer(pdf, state, i18n);
+  addFooter(pdf, state.page, i18n);
 
   pdf.save(filename);
 }

@@ -1,49 +1,49 @@
 import { LogOut, UserCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
+import LanguageSelector from "./LanguageSelector.jsx";
 
 const pageTitles = {
   "/": {
-    title: "Painel de segurança das vagas",
-    subtitle:
-      "Acompanhe quais vagas parecem confiáveis, suspeitas ou com alto risco antes de enviar dados pessoais.",
+    titleKey: "topbar.dashboardTitle",
+    subtitleKey: "topbar.dashboardSubtitle",
   },
   "/analisar": {
-    title: "Analisar vaga",
-    subtitle:
-      "Informe os dados da oportunidade para verificar sinais de risco antes de avançar no processo.",
+    titleKey: "topbar.analyzeTitle",
+    subtitleKey: "topbar.analyzeSubtitle",
   },
   "/historico": {
-    title: "Histórico de análises",
-    subtitle:
-      "Consulte as vagas já analisadas e acompanhe os resultados anteriores.",
+    titleKey: "topbar.historyTitle",
+    subtitleKey: "topbar.historySubtitle",
   },
   "/denuncias": {
-    title: "Denúncias",
-    subtitle:
-      "Registre oportunidades suspeitas para ajudar a identificar possíveis golpes.",
+    titleKey: "topbar.reportsTitle",
+    subtitleKey: "topbar.reportsSubtitle",
   },
   "/sobre": {
-    title: "Sobre o EmpregaSafe",
-    subtitle:
-      "Entenda como o sistema ajuda a identificar sinais de risco em vagas de emprego.",
+    titleKey: "topbar.aboutTitle",
+    subtitleKey: "topbar.aboutSubtitle",
   },
 };
 
 export default function Topbar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
 
   const pageInfo = pageTitles[location.pathname] || pageTitles["/"];
 
   return (
     <header className="topbar">
       <div className="topbar-title">
-        <h1>{pageInfo.title}</h1>
-        <p>{pageInfo.subtitle}</p>
+        <h1>{t(pageInfo.titleKey)}</h1>
+        <p>{t(pageInfo.subtitleKey)}</p>
       </div>
 
       <div className="topbar-user">
+        <LanguageSelector className="topbar-language-selector" />
+
         <div className="topbar-user-info">
           <UserCircle size={24} />
           <span>{user?.name || "EmpregaSafe"}</span>
@@ -51,7 +51,7 @@ export default function Topbar() {
 
         <button type="button" className="logout-button" onClick={signOut}>
           <LogOut size={18} />
-          Sair
+          {t("topbar.logout")}
         </button>
       </div>
     </header>

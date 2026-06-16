@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { login } from "../services/authService";
+import LanguageSelector from "../components/LanguageSelector.jsx";
 import logo from "../assets/logo.png";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
+  const { t } = useLanguage();
 
   const successMessage = location.state?.message || "";
 
@@ -37,7 +40,7 @@ export default function Login() {
 
       if (!data.token || !data.user) {
         setError(
-          "Login realizado, mas a sessão não foi retornada corretamente.",
+          t("auth.loginSessionError"),
         );
         return;
       }
@@ -46,7 +49,7 @@ export default function Login() {
       navigate("/app", { replace: true });
     } catch (err) {
       setError(
-        err.message || "Não foi possível acessar. Confira o e-mail e a senha.",
+        err.message || t("auth.loginError"),
       );
     } finally {
       setLoading(false);
@@ -61,16 +64,16 @@ export default function Login() {
 
           <div>
             <strong>EmpregaSafe</strong>
-            <span>Análise inteligente de vagas</span>
+            <span>{t("common.appTagline")}</span>
           </div>
         </div>
+        <LanguageSelector className="auth-language-selector" />
 
         <div className="auth-headline">
-          <h1>Acessar plataforma</h1>
+          <h1>{t("auth.loginTitle")}</h1>
 
           <p>
-            Entre para analisar vagas, acompanhar histórico e registrar
-            denúncias de oportunidades suspeitas.
+            {t("auth.loginText")}
           </p>
         </div>
 
@@ -80,7 +83,7 @@ export default function Login() {
           )}
 
           <label className="field-group">
-            <span>E-mail</span>
+            <span>{t("common.email")}</span>
 
             <div className="field-control login-field-control">
               <Mail size={19} />
@@ -90,14 +93,14 @@ export default function Login() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 type="email"
                 autoComplete="username"
-                placeholder="Digite seu e-mail"
+                placeholder={t("auth.emailPlaceholder")}
                 required
               />
             </div>
           </label>
 
           <label className="field-group">
-            <span>Senha</span>
+            <span>{t("common.password")}</span>
 
             <div className="field-control login-field-control login-password-control">
               <LockKeyhole size={19} />
@@ -107,7 +110,7 @@ export default function Login() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                placeholder="Digite sua senha"
+                placeholder={t("auth.passwordPlaceholder")}
                 required
               />
 
@@ -115,7 +118,9 @@ export default function Login() {
                 type="button"
                 className="field-icon-button"
                 onClick={() => setShowPassword((value) => !value)}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                aria-label={
+                  showPassword ? t("auth.hidePassword") : t("auth.showPassword")
+                }
               >
                 {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
               </button>
@@ -124,19 +129,20 @@ export default function Login() {
 
           {error && <div className="alert-error full-width">{error}</div>}
           <div className="forgot-password-row">
-            <Link to="/forgot-password">Esqueci minha senha</Link>
+            <Link to="/forgot-password">{t("auth.forgotPassword")}</Link>
           </div>
           <button className="primary-button auth-submit" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? t("auth.loggingIn") : t("auth.loginButton")}
           </button>
 
           <Link to="/" className="report-clear-button auth-back-button">
             <ArrowLeft size={18} />
-            Voltar
+            {t("common.back")}
           </Link>
 
           <p className="auth-switch">
-            Ainda não tem conta? <Link to="/register">Criar conta</Link>
+            {t("auth.noAccount")}{" "}
+            <Link to="/register">{t("auth.createAccountLink")}</Link>
           </p>
         </form>
       </section>

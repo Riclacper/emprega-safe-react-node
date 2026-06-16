@@ -16,6 +16,7 @@ import RiskBadge from "../components/RiskBadge.jsx";
 import { getStats } from "../services/statsService";
 import { listAnalyses } from "../services/analysisService";
 import { formatDate } from "../utils/formatters";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const CLASSIFICATION_COLORS = {
   Confiável: "#16a34a",
@@ -48,6 +49,7 @@ const TOOLTIP_ITEM_STYLE = {
 };
 
 export default function Dashboard() {
+  const { language, t, translateClassification } = useLanguage();
   const [stats, setStats] = useState(null);
   const [analyses, setAnalyses] = useState([]);
   const [error, setError] = useState("");
@@ -90,66 +92,63 @@ export default function Dashboard() {
     });
 
     return [
-      { name: "Confiável", value: totals.Confiável },
-      { name: "Suspeita", value: totals.Suspeita },
-      { name: "Fraudulenta", value: totals.Fraudulenta },
-      { name: "Crítica", value: totals.Crítica },
+      { key: "Confiável", name: translateClassification("Confiável"), value: totals.Confiável },
+      { key: "Suspeita", name: translateClassification("Suspeita"), value: totals.Suspeita },
+      { key: "Fraudulenta", name: translateClassification("Fraudulenta"), value: totals.Fraudulenta },
+      { key: "Crítica", name: translateClassification("Crítica"), value: totals.Crítica },
     ];
-  }, [stats]);
+  }, [stats, translateClassification]);
 
   if (error) return <div className="alert-error">{error}</div>;
-  if (!stats) return <div className="card">Carregando dashboard...</div>;
+  if (!stats) return <div className="card">{t("common.loadingDashboard")}</div>;
 
   return (
     <div className="page-stack">
       <section className="metrics-grid">
         <MetricCard
-          title="Total de vagas"
+          title={t("dashboard.totalJobs")}
           value={stats.total}
-          description="Análises feitas no sistema"
+          description={t("dashboard.totalJobsDescription")}
         />
 
         <MetricCard
-          title="Vagas suspeitas"
+          title={t("dashboard.suspiciousJobs")}
           value={stats.suspicious}
-          description="Precisam de atenção"
+          description={t("dashboard.suspiciousJobsDescription")}
         />
 
         <MetricCard
-          title="Risco alto"
+          title={t("dashboard.highRisk")}
           value={stats.fraudulent + stats.critical}
-          description="Possíveis golpes identificados"
+          description={t("dashboard.highRiskDescription")}
         />
 
         <MetricCard
-          title="Denúncias enviadas"
+          title={t("dashboard.sentReports")}
           value={stats.reports}
-          description="Registros enviados por usuários"
+          description={t("dashboard.sentReportsDescription")}
         />
       </section>
       <section className="card dashboard-summary">
         <div>
-          <h2>Resumo do painel</h2>
+          <h2>{t("dashboard.summaryTitle")}</h2>
           <p>
-            Este painel mostra a situação das vagas analisadas pelo EmpregaSafe.
-            Vagas em verde indicam menor risco. Vagas em amarelo, vermelho ou
-            vermelho escuro exigem atenção antes de enviar dados pessoais,
-            documentos ou realizar qualquer pagamento.
+            {t("dashboard.summaryText")}
           </p>
         </div>
 
         <div className="risk-legend">
           <span>
-            <b className="dot green"></b> Confiável
+            <b className="dot green"></b> {t("risk.safe")}
           </span>
           <span>
-            <b className="dot yellow"></b> Suspeita
+            <b className="dot yellow"></b> {t("risk.suspicious")}
           </span>
           <span>
-            <b className="dot red"></b> Fraudulenta
+            <b className="dot red"></b> {t("risk.fraudulent")}
           </span>
           <span>
-            <b className="dot darkred"></b> Crítica
+            <b className="dot darkred"></b> {t("risk.criticalShort")}
           </span>
         </div>
       </section>
@@ -157,11 +156,10 @@ export default function Dashboard() {
       <section className="card top-reported-card">
         <div className="top-reported-header">
           <div>
-            <span className="eyebrow">Alertas da comunidade</span>
-            <h2>Empresas mais denunciadas</h2>
+            <span className="eyebrow">{t("dashboard.communityAlerts")}</span>
+            <h2>{t("dashboard.topReportedTitle")}</h2>
             <p>
-              Ranking agregado de denúncias registradas no sistema. Os dados
-              individuais dos usuários permanecem privados.
+              {t("dashboard.topReportedText")}
             </p>
           </div>
         </div>
@@ -172,10 +170,12 @@ export default function Dashboard() {
               <li key={`${item.company}-${index}`}>
                 <span className="top-reported-position">{index + 1}</span>
                 <div>
-                  <strong>{item.company || "Empresa não informada"}</strong>
+                  <strong>{item.company || t("common.notInformed")}</strong>
                   <small>
-                    {item.count} denúncia{item.count === 1 ? "" : "s"}{" "}
-                    registrada{item.count === 1 ? "" : "s"}
+                    {t("dashboard.reportCount", {
+                      count: item.count,
+                      plural: item.count === 1 ? "" : "s",
+                    })}
                   </small>
                 </div>
               </li>
@@ -183,7 +183,7 @@ export default function Dashboard() {
           </ol>
         ) : (
           <p className="top-reported-empty">
-            Ainda não há volume suficiente de denúncias para formar um ranking.
+            {t("dashboard.topReportedEmpty")}
           </p>
         )}
       </section>
@@ -192,10 +192,9 @@ export default function Dashboard() {
         <article className="card chart-card">
           <div className="chart-card-header">
             <div>
-              <h2>Método usado nas análises</h2>
+              <h2>{t("dashboard.methodTitle")}</h2>
               <p>
-                Mostra quantas vagas foram avaliadas apenas por regras do
-                sistema ou com apoio de IA.
+                {t("dashboard.methodText")}
               </p>
             </div>
           </div>
@@ -224,7 +223,10 @@ export default function Dashboard() {
                 contentStyle={TOOLTIP_STYLE}
                 labelStyle={TOOLTIP_LABEL_STYLE}
                 itemStyle={TOOLTIP_ITEM_STYLE}
-                formatter={(value) => [`${value} análise(s)`, "Total"]}
+                formatter={(value) => [
+                  `${value} ${t("common.analyses")}`,
+                  t("common.total"),
+                ]}
               />{" "}
             </PieChart>
           </ResponsiveContainer>
@@ -236,8 +238,8 @@ export default function Dashboard() {
                 item.name.toLowerCase().includes("ai") ||
                 item.name.toLowerCase().includes("híbrida") ||
                 item.name.toLowerCase().includes("hybrid")
-                  ? "Com apoio de IA"
-                  : "Regras locais";
+                  ? t("dashboard.withAi")
+                  : t("dashboard.localRules");
 
               return (
                 <span key={item.name}>
@@ -251,12 +253,9 @@ export default function Dashboard() {
             })}
           </div>
           <div className="chart-help-box">
-            <strong>Como interpretar:</strong>
+            <strong>{t("dashboard.howInterpret")}</strong>
             <p>
-              Regras locais são critérios automáticos do sistema, como salário
-              suspeito, pedido de pagamento ou contato informal. Com apoio de IA
-              indica análises que também usam inteligência artificial para
-              interpretar melhor o texto da vaga.
+              {t("dashboard.methodHelp")}
             </p>
           </div>
         </article>
@@ -264,9 +263,9 @@ export default function Dashboard() {
         <article className="card chart-card">
           <div className="chart-card-header">
             <div>
-              <h2>Situação das vagas</h2>
+              <h2>{t("dashboard.statusTitle")}</h2>
               <p>
-                Mostra quantas vagas foram classificadas em cada nível de risco.
+                {t("dashboard.statusText")}
               </p>
             </div>
           </div>
@@ -285,13 +284,16 @@ export default function Dashboard() {
                 contentStyle={TOOLTIP_STYLE}
                 labelStyle={TOOLTIP_LABEL_STYLE}
                 itemStyle={TOOLTIP_ITEM_STYLE}
-                formatter={(value) => [`${value} vaga(s)`, "Total"]}
+                formatter={(value) => [
+                  `${value} ${t("common.jobs")}`,
+                  t("common.total"),
+                ]}
               />{" "}
               <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                 {normalizedClassificationChart.map((entry, index) => (
                   <Cell
                     key={`classification-${index}`}
-                    fill={CLASSIFICATION_COLORS[entry.name] || "#3457ff"}
+                    fill={CLASSIFICATION_COLORS[entry.key] || "#3457ff"}
                   />
                 ))}
               </Bar>
@@ -304,7 +306,7 @@ export default function Dashboard() {
                 <b
                   className="legend-dot"
                   style={{
-                    background: CLASSIFICATION_COLORS[item.name] || "#3457ff",
+                    background: CLASSIFICATION_COLORS[item.key] || "#3457ff",
                   }}
                 ></b>
                 {item.name} — {item.value}
@@ -313,11 +315,9 @@ export default function Dashboard() {
           </div>
 
           <div className="chart-help-box">
-            <strong>Como interpretar:</strong>
+            <strong>{t("dashboard.howInterpret")}</strong>
             <p>
-              Verde indica menor risco. Amarelo exige atenção antes de avançar.
-              Vermelho indica possível fraude. Crítica representa risco grave e
-              deve ser evitada.
+              {t("dashboard.statusHelp")}
             </p>
           </div>
         </article>
@@ -325,10 +325,10 @@ export default function Dashboard() {
 
       <section className="card">
         <div className="latest-header">
-          <h2>Últimas análises</h2>
+          <h2>{t("dashboard.latestTitle")}</h2>
 
           <span className="latest-risk-average">
-            Risco médio das análises: {stats.averageScore}/100
+            {t("dashboard.averageRisk", { score: stats.averageScore })}
           </span>
         </div>
 
@@ -336,30 +336,30 @@ export default function Dashboard() {
           <table className="latest-table">
             <thead>
               <tr>
-                <th className="date-col">Data</th>
-                <th className="job-col">Vaga</th>
-                <th className="company-col">Empresa</th>
-                <th className="score-col">Score</th>
-                <th className="status-col">Status</th>
+                <th className="date-col">{t("common.date")}</th>
+                <th className="job-col">{t("common.job")}</th>
+                <th className="company-col">{t("common.company")}</th>
+                <th className="score-col">{t("common.score")}</th>
+                <th className="status-col">{t("common.status")}</th>
               </tr>
             </thead>
 
             <tbody>
               {analyses.map((item) => (
                 <tr key={item.externalId || item._id}>
-                  <td className="date-col">{formatDate(item.createdAt)}</td>
+                  <td className="date-col">{formatDate(item.createdAt, language)}</td>
                   <td className="job-col">
                     <strong>{item.title}</strong>
                   </td>
                   <td className="company-col">
-                    {item.company || "Não informada"}
+                    {item.company || t("common.notInformed")}
                   </td>
                   <td className="score-col">{item.score}/100</td>
                   <td className="status-col">
                     <RiskBadge badge={item.badge}>
                       {item.classification === "Risco crítico"
-                        ? "Crítica"
-                        : item.classification}
+                        ? t("risk.criticalShort")
+                        : translateClassification(item.classification)}
                     </RiskBadge>
                   </td>
                 </tr>

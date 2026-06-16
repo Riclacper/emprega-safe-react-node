@@ -7,8 +7,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
+import LanguageSelector from "../components/LanguageSelector.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 export default function Landing() {
+  const { t } = useLanguage();
+
   return (
     <main className="landing-page">
       <header className="landing-header">
@@ -19,15 +23,16 @@ export default function Landing() {
 
           <div>
             <strong>EmpregaSafe</strong>
-            <span>Análise inteligente de vagas</span>
+            <span>{t("common.appTagline")}</span>
           </div>
         </div>
 
         <nav className="landing-nav">
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#classificacoes">Classificações</a>
+          <a href="#como-funciona">{t("landing.navHow")}</a>
+          <a href="#classificacoes">{t("landing.navRisk")}</a>
+          <LanguageSelector className="landing-language-selector" />
           <Link className="landing-login-link" to="/login">
-            Entrar
+            {t("landing.login")}
           </Link>
         </nav>
       </header>
@@ -37,40 +42,37 @@ export default function Landing() {
           <span className="eyebrow">EmpregaSafe</span>
 
           <h1>
-            Descubra se uma vaga é confiável antes de avançar no processo.
+            {t("landing.heroTitle")}
           </h1>
 
           <p>
-            O EmpregaSafe analisa oportunidades de emprego e identifica sinais
-            como cobrança antecipada, pedido de documentos sensíveis, links
-            suspeitos e urgência artificial.
+            {t("landing.heroText")}
           </p>
 
           <div className="landing-actions">
             <Link className="landing-primary" to="/login">
-              Acessar plataforma
+              {t("landing.accessPlatform")}
               <ArrowRight size={20} />
             </Link>
 
             <a className="landing-secondary" href="#como-funciona">
-              Ver como funciona
+              {t("landing.seeHow")}
             </a>
           </div>
         </div>
 
         <div className="landing-preview-card">
-          <span>EXEMPLO DE RESULTADO</span>
+          <span>{t("landing.example")}</span>
 
           <div className="landing-score">
             <strong>73</strong>
             <small>/100</small>
           </div>
 
-          <h2>Potencialmente fraudulenta</h2>
+          <h2>{t("landing.exampleTitle")}</h2>
 
           <p>
-            Indícios de cobrança antecipada, pedido de documentos sensíveis,
-            urgência artificial e link suspeito.
+            {t("landing.exampleText")}
           </p>
         </div>
       </section>
@@ -78,90 +80,87 @@ export default function Landing() {
       <section className="landing-cards">
         <article>
           <FileSearch size={28} />
-          <h3>Analisa a oportunidade</h3>
+          <h3>{t("landing.cardAnalyzeTitle")}</h3>
           <p>
-            Avalia título, empresa, salário, contato, link e descrição da
-            oportunidade.
+            {t("landing.cardAnalyzeText")}
           </p>
         </article>
 
         <article>
           <AlertTriangle size={28} />
-          <h3>Identifica sinais de risco</h3>
+          <h3>{t("landing.cardRiskTitle")}</h3>
           <p>
-            Detecta cobrança antecipada, pedido de documentos, links suspeitos e
-            promessas incompatíveis.
+            {t("landing.cardRiskText")}
           </p>
         </article>
 
         <article>
           <ShieldCheck size={28} />
-          <h3>Gera uma recomendação</h3>
+          <h3>{t("landing.cardRecommendationTitle")}</h3>
           <p>
-            Apresenta pontuação, classificação, motivos encontrados e orientação
-            para o candidato.
+            {t("landing.cardRecommendationText")}
           </p>
         </article>
       </section>
 
       <section id="como-funciona" className="landing-section">
         <div>
-          <span className="eyebrow">Como funciona</span>
-          <h2>Como o EmpregaSafe avalia uma vaga</h2>
+          <span className="eyebrow">{t("landing.howEyebrow")}</span>
+          <h2>{t("landing.howTitle")}</h2>
         </div>
 
         <div className="landing-steps">
           <div>
             <strong>1</strong>
-            <h3>Informe a vaga</h3>
+            <h3>{t("landing.step1Title")}</h3>
             <p>
-              Preencha título, descrição e dados disponíveis da oportunidade.
+              {t("landing.step1Text")}
             </p>
           </div>
 
           <div>
             <strong>2</strong>
-            <h3>Execute a análise</h3>
-            <p>O sistema aplica regras automáticas e pode usar apoio de IA.</p>
+            <h3>{t("landing.step2Title")}</h3>
+            <p>{t("landing.step2Text")}</p>
           </div>
 
           <div>
             <strong>3</strong>
-            <h3>Receba o resultado</h3>
-            <p>Veja score, classificação, motivos de risco e recomendação.</p>
+            <h3>{t("landing.step3Title")}</h3>
+            <p>{t("landing.step3Text")}</p>
           </div>
         </div>
       </section>
 
       <section id="classificacoes" className="landing-section">
         <div>
-          <span className="eyebrow">Classificações</span>
-          <h2>Entenda os níveis de risco</h2>
+          <span className="eyebrow">{t("landing.riskEyebrow")}</span>
+          <h2>{t("landing.riskTitle")}</h2>
         </div>
 
         <div className="landing-risk-grid">
           <div className="risk-level safe">
             <strong>0 a 25</strong>
-            <span>Confiável</span>
-            <p>Baixo risco aparente.</p>
+            <span>{t("risk.safe")}</span>
+            <p>{t("risk.safeDescription")}</p>
           </div>
 
           <div className="risk-level warning">
             <strong>26 a 55</strong>
-            <span>Suspeita</span>
-            <p>Exige atenção antes de avançar.</p>
+            <span>{t("risk.suspicious")}</span>
+            <p>{t("risk.suspiciousDescription")}</p>
           </div>
 
           <div className="risk-level danger">
             <strong>56 a 80</strong>
-            <span>Fraudulenta</span>
-            <p>Indícios fortes de fraude.</p>
+            <span>{t("risk.fraudulent")}</span>
+            <p>{t("risk.fraudulentDescription")}</p>
           </div>
 
           <div className="risk-level critical">
             <strong>81 a 100</strong>
-            <span>Risco crítico</span>
-            <p>Risco grave. Recomenda-se evitar.</p>
+            <span>{t("risk.critical")}</span>
+            <p>{t("risk.criticalDescription")}</p>
           </div>
         </div>
       </section>
@@ -169,11 +168,10 @@ export default function Landing() {
       <section className="landing-final">
         <CheckCircle2 size={34} />
         <h2>
-          Antes de enviar documentos, dados pessoais ou dinheiro, analise a vaga
-          no EmpregaSafe.
+          {t("landing.finalText")}
         </h2>
         <Link to="/login" className="landing-cta-button">
-          <span>Acessar plataforma</span>
+          <span>{t("landing.accessPlatform")}</span>
           <ArrowRight size={22} />
         </Link>
       </section>

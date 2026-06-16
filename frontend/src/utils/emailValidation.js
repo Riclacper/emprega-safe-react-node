@@ -17,6 +17,7 @@ export function validateEmail(value) {
   ) {
     return {
       valid: false,
+      messageKey: "auth.invalidEmail",
       message: "Informe um e-mail válido.",
     };
   }
@@ -26,6 +27,7 @@ export function validateEmail(value) {
   if (COMMON_TLD_TYPOS.has(tld)) {
     return {
       valid: false,
+      messageKey: "auth.emailDomainTypo",
       message: "Verifique o domínio do e-mail. Você quis dizer .com?",
     };
   }

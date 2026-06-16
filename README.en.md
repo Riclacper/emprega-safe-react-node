@@ -43,7 +43,9 @@
 - About page explaining the project, scoring, and system purpose.
 - Responsive layout with mobile menu.
 - Light or dark theme applied automatically according to the device preference.
-- Base HTML language set to `pt-BR` for accessibility and better automatic browser translation.
+- Interface language selector to switch between Portuguese and English, with the preference saved in the browser.
+- Translation of the interface, menus, forms, visual reports, common messages, and exported PDF according to the selected language.
+- Automatic update of the HTML `lang` attribute for accessibility and better interpretation by browsers and screen readers.
 - Data persistence in MongoDB Atlas.
 - Automated unit, security, E2E, accessibility, and AI comparison test suites.
 - Quality pipeline with GitHub Actions.
@@ -77,6 +79,9 @@ Health check: https://empregasafe-api.onrender.com/health
 
 > On Render's free plan, the API may hibernate after idle periods. For presentations, open the system a few minutes earlier to reactivate the service.
 
+> Language selection is controlled by the frontend and saved in the browser. It
+> does not require an additional Render environment variable in production.
+
 ## Project Structure
 
 ```txt
@@ -108,6 +113,7 @@ emprega-safe-react-node/
 │   │   ├── components/
 │   │   ├── context/
 │   │   ├── hooks/
+│   │   ├── i18n/
 │   │   ├── pages/
 │   │   ├── routes/
 │   │   ├── services/

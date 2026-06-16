@@ -5,6 +5,7 @@ import {
   sendReportEmail,
 } from "../services/reportService";
 import { listAnalyses } from "../services/analysisService";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { formatDate } from "../utils/formatters";
 
 const initialForm = {
@@ -16,6 +17,7 @@ const initialForm = {
 };
 
 export default function Reports() {
+  const { language, t, translateClassification } = useLanguage();
   const [reports, setReports] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
@@ -116,10 +118,14 @@ export default function Reports() {
       analysisId: getAnalysisIdValue(analysis),
       company: analysis.company || analysis.title || "",
       link: analysis.link || "",
-      reason: current.reason || "Denúncia relacionada a uma vaga suspeita",
+      reason: current.reason || t("reports.defaultReason"),
       details:
         current.details ||
-        `Denúncia relacionada à vaga "${analysis.title}" classificada como ${analysis.classification} com score ${analysis.score}/100.`,
+        t("reports.defaultDetails", {
+          title: analysis.title,
+          classification: translateClassification(analysis.classification),
+          score: analysis.score,
+        }),
     }));
     setSubmitted(false);
     setError("");
@@ -154,13 +160,13 @@ export default function Reports() {
         link: form.link.trim(),
         reason:
           form.reason.trim() ||
-          `Denúncia vinculada à análise ${form.analysisId.trim()}`,
+          t("reports.linkedReason", { id: form.analysisId.trim() }),
         details: form.details.trim(),
       });
 
       setReports((currentReports) => [createdReport, ...currentReports]);
 
-      showTemporaryMessage("Denúncia registrada com sucesso.");
+      showTemporaryMessage(t("reports.success"));
       setError("");
 
       setTimeout(() => {
@@ -170,7 +176,7 @@ export default function Reports() {
       setSubmitted(false);
       load();
     } catch (err) {
-      setError(err.message || "Não foi possível registrar a denúncia.");
+      setError(err.message || t("reports.submitError"));
     } finally {
       setLoading(false);
     }
@@ -188,33 +194,39 @@ export default function Reports() {
     return report.analysis?.externalId || report.analysisId || "";
   }
 
+  function isLinkedReportReason(reason = "") {
+    return (
+      reason.includes("Denúncia vinculada") ||
+      reason.includes("Report linked")
+    );
+  }
+
   function buildReportEmailHref(report) {
     const analysisId = getReportAnalysisId(report);
 
-    const subject = `Denúncia de vaga suspeita - ${
-      report.company || "Empresa não informada"
-    }`;
+    const company = report.company || t("common.notInformed");
+    const subject = t("reports.emailSubject", { company });
 
     const body = [
-      "Olá,",
+      t("reports.emailGreeting"),
       "",
-      "Segue denúncia registrada no EmpregaSafe:",
+      t("reports.emailIntro"),
       "",
-      `Empresa: ${report.company || "Empresa não informada"}`,
-      `Data: ${formatDate(report.createdAt)}`,
-      analysisId ? `Análise vinculada: ${analysisId}` : "",
-      `Motivo: ${
-        report.reason?.includes("Denúncia vinculada")
-          ? "Vaga suspeita denunciada"
-          : report.reason || "Não informado"
+      `${t("common.company")}: ${company}`,
+      `${t("common.date")}: ${formatDate(report.createdAt, language)}`,
+      analysisId ? `${t("reports.emailLinkedAnalysis")} ${analysisId}` : "",
+      `${t("common.reason")}: ${
+        isLinkedReportReason(report.reason)
+          ? t("reports.suspiciousJobReported")
+          : report.reason || t("common.notInformedMale")
       }`,
       "",
-      "Detalhes:",
-      report.details || "Não informado",
+      t("reports.emailDetails"),
+      report.details || t("common.notInformedMale"),
       "",
-      report.link ? `Link da vaga: ${report.link}` : "",
+      report.link ? `${t("reports.emailJobLink")} ${report.link}` : "",
       "",
-      "Relatório gerado pelo EmpregaSafe.",
+      t("reports.emailFooter"),
     ]
       .filter(Boolean)
       .join("\n");
@@ -232,7 +244,7 @@ export default function Reports() {
       await sendReportEmail(report._id);
       closeReportModal();
     } catch (err) {
-      setEmailError(err.message || "Não foi possível enviar o e-mail.");
+      setEmailError(err.message || t("reports.emailError"));
     } finally {
       setEmailLoading(false);
     }
@@ -284,18 +296,17 @@ export default function Reports() {
   return (
     <div className="page-stack two-column">
       <section className="card">
-        <span className="eyebrow">Registro de denúncia</span>
-        <h2>Denunciar vaga suspeita</h2>
+        <span className="eyebrow">{t("reports.eyebrow")}</span>
+        <h2>{t("reports.title")}</h2>
 
         <p className="form-hint">
-          Selecione uma análise já registrada para vincular a denúncia. O
-          sistema preencherá automaticamente os dados principais da vaga.
+          {t("reports.hint")}
         </p>
 
         <form onSubmit={handleSubmit} className="form-grid">
           <label className="analysis-picker-wrap" ref={analysisPickerRef}>
             <span className="label-text">
-              ID da análise <strong className="required">*</strong>
+              {t("reports.analysisId")} <strong className="required">*</strong>
             </span>
             <input
               className={
@@ -312,7 +323,7 @@ export default function Reports() {
                   setShowAnalysisOptions(false);
                 }
               }}
-              placeholder="Clique para buscar"
+              placeholder={t("reports.searchPlaceholder")}
             />
             {showAnalysisOptions && (
               <div className="analysis-options">
@@ -329,18 +340,18 @@ export default function Reports() {
                       onClick={() => selectAnalysis(analysis)}
                     >
                       <strong>
-                        {analysis.company || "Empresa não informada"}
+                        {analysis.company || t("common.notInformed")}
                       </strong>
-                      <span>{analysis.title || "Vaga sem título"}</span>
+                      <span>{analysis.title || t("reports.untitledJob")}</span>
                       <small>
-                        {analysis.classification} • {analysis.score}/100 •{" "}
-                        {shortId(getAnalysisIdValue(analysis))}
+                        {translateClassification(analysis.classification)} •{" "}
+                        {analysis.score}/100 • {shortId(getAnalysisIdValue(analysis))}
                       </small>
                     </button>
                   ))
                 ) : (
                   <div className="analysis-option-empty">
-                    Nenhuma análise encontrada com esse termo.
+                    {t("reports.noAnalysis")}
                   </div>
                 )}
               </div>
@@ -348,31 +359,31 @@ export default function Reports() {
           </label>
 
           <label>
-            Empresa
+            {t("common.company")}
             <input
               value={form.company}
               onChange={(e) => update("company", e.target.value)}
-              placeholder="Nome da empresa ou anunciante"
+              placeholder={t("reports.companyPlaceholder")}
             />
           </label>
 
           <label className="full">
-            <span className="label-text">Motivo</span>
+            <span className="label-text">{t("common.reason")}</span>
 
             <input
               value={form.reason}
               onChange={(e) => update("reason", e.target.value)}
-              placeholder="Ex: Cobrança antecipada, pedido de documentos, golpe"
+              placeholder={t("reports.reasonPlaceholder")}
             />
           </label>
 
           <label className="full">
-            Detalhes
+            {t("common.details")}
             <textarea
               value={form.details}
               onChange={(e) => update("details", e.target.value)}
               rows={6}
-              placeholder="Descreva o que aconteceu, quais sinais chamaram atenção e como foi o contato."
+              placeholder={t("reports.detailsPlaceholder")}
             />
           </label>
 
@@ -386,7 +397,7 @@ export default function Reports() {
               className="report-clear-button"
               onClick={clearForm}
             >
-              Limpar campos
+              {t("common.clearFields")}
             </button>
 
             <button
@@ -394,7 +405,7 @@ export default function Reports() {
               className="report-submit-button"
               disabled={loading}
             >
-              {loading ? "Registrando..." : "Registrar denúncia"}
+              {loading ? t("reports.registering") : t("reports.register")}
             </button>
           </div>
         </form>
@@ -403,8 +414,8 @@ export default function Reports() {
       <section className="card">
         <div className="section-title reports-title">
           <div>
-            <h2>Denúncias recentes</h2>
-            <p>{reports.length} registro(s) enviado(s)</p>
+            <h2>{t("reports.recentTitle")}</h2>
+            <p>{t("reports.sentRecords", { count: reports.length })}</p>
           </div>
         </div>
 
@@ -416,14 +427,16 @@ export default function Reports() {
             >
               <div className="report-item-header">
                 <div>
-                  <strong>{report.company || "Empresa não informada"}</strong>
-                  <span>{formatDate(report.createdAt)}</span>
+                  <strong>{report.company || t("common.notInformed")}</strong>
+                  <span>{formatDate(report.createdAt, language)}</span>
                 </div>
               </div>
 
               {getReportAnalysisId(report) && (
                 <p className="report-analysis-id">
-                  <span className="report-id-label">Análise vinculada</span>
+                  <span className="report-id-label">
+                    {t("reports.linkedAnalysis")}
+                  </span>
 
                   <strong title={getReportAnalysisId(report)}>
                     {shortId(getReportAnalysisId(report))}
@@ -432,9 +445,9 @@ export default function Reports() {
               )}
 
               <p className="report-reason">
-                <strong>Motivo:</strong>{" "}
-                {report.reason?.includes("Denúncia vinculada")
-                  ? "Denúncia relacionada a uma vaga suspeita"
+                <strong>{t("common.reason")}:</strong>{" "}
+                {isLinkedReportReason(report.reason)
+                  ? t("reports.defaultReason")
                   : report.reason}
               </p>
 
@@ -445,14 +458,14 @@ export default function Reports() {
                 className="report-link report-view-button"
                 onClick={() => openReportModal(report)}
               >
-                Ver
+                {t("common.view")}
               </button>
             </article>
           ))}
 
           {reports.length === 0 && (
             <div className="empty-table-message">
-              Nenhuma denúncia registrada ainda.
+              {t("reports.noReports")}
             </div>
           )}
         </div>
@@ -465,33 +478,34 @@ export default function Reports() {
           >
             <div className="report-modal-header">
               <div>
-                <span className="eyebrow">Detalhes da denúncia</span>
-                <h2>{selectedReport.company || "Empresa não informada"}</h2>
+                <span className="eyebrow">{t("reports.detailsEyebrow")}</span>
+                <h2>{selectedReport.company || t("common.notInformed")}</h2>
               </div>
             </div>
 
             <div className="report-modal-content">
               <p>
-                <strong>Data:</strong> {formatDate(selectedReport.createdAt)}
+                <strong>{t("common.date")}:</strong>{" "}
+                {formatDate(selectedReport.createdAt, language)}
               </p>
 
               {getReportAnalysisId(selectedReport) && (
                 <p>
-                  <strong>Análise vinculada:</strong>{" "}
+                  <strong>{t("reports.linkedAnalysis")}:</strong>{" "}
                   {getReportAnalysisId(selectedReport)}
                 </p>
               )}
 
               <p>
-                <strong>Motivo:</strong>{" "}
-                {selectedReport.reason?.includes("Denúncia vinculada")
-                  ? "Vaga suspeita denunciada"
+                <strong>{t("common.reason")}:</strong>{" "}
+                {isLinkedReportReason(selectedReport.reason)
+                  ? t("reports.suspiciousJobReported")
                   : selectedReport.reason}
               </p>
 
               {selectedReport.details && (
                 <p>
-                  <strong>Detalhes:</strong>
+                  <strong>{t("common.details")}:</strong>
                   <br />
                   {selectedReport.details}
                 </p>
@@ -504,7 +518,7 @@ export default function Reports() {
                   onClick={() => handleSendReportEmail(selectedReport)}
                   disabled={emailLoading}
                 >
-                  {emailLoading ? "Enviando..." : "Enviar por e-mail"}
+                  {emailLoading ? t("common.sending") : t("common.sendEmail")}
                 </button>
 
                 <button
@@ -512,7 +526,7 @@ export default function Reports() {
                   className="report-clear-button report-modal-close-action"
                   onClick={closeReportModal}
                 >
-                  Fechar
+                  {t("common.close")}
                 </button>
 
                 {emailError && <div className="alert-error">{emailError}</div>}

@@ -2,12 +2,15 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { verify } from "../services/authService";
+import LanguageSelector from "../components/LanguageSelector.jsx";
 import logo from "../assets/logo.png";
 
 export default function Verify() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
+  const { t } = useLanguage();
 
   const email = sessionStorage.getItem("empregasafe_login_email");
 
@@ -99,7 +102,7 @@ export default function Verify() {
     setCodeError(false);
 
     if (!email) {
-      setError("E-mail não encontrado. Faça login novamente.");
+      setError(t("auth.missingEmail"));
       return;
     }
 
@@ -116,7 +119,7 @@ export default function Verify() {
       const data = await verify(email, verificationCode);
 
       if (!data.token || !data.user) {
-        setError("Código validado, mas a sessão não foi retornada.");
+        setError(t("auth.verifiedMissingSession"));
         return;
       }
 
@@ -128,7 +131,7 @@ export default function Verify() {
       if (err.message?.toLowerCase().includes("código inválido")) {
         setCodeError(true);
       } else {
-        setError(err.message || "Código inválido ou expirado.");
+        setError(err.message || t("auth.invalidCode"));
       }
     } finally {
       setLoading(false);
@@ -143,23 +146,23 @@ export default function Verify() {
 
           <div>
             <strong>EmpregaSafe</strong>
-            <span>Análise inteligente de vagas</span>
+            <span>{t("common.appTagline")}</span>
           </div>
         </div>
+        <LanguageSelector className="auth-language-selector" />
 
         <div className="auth-headline">
           <ShieldCheck size={42} />
-          <h1>Verificar acesso</h1>
+          <h1>{t("auth.verifyTitle")}</h1>
 
           <p>
-            Enviamos um código de 6 dígitos para o e-mail cadastrado. Informe o
-            código para acessar a plataforma.
+            {t("auth.verifyText")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label className="field-group">
-            <span>Código de verificação</span>
+            <span>{t("auth.verificationCode")}</span>
 
             <div
               className={`verify-code-grid ${codeError ? "verify-code-error" : ""}`}
@@ -183,7 +186,7 @@ export default function Verify() {
                   autoComplete={index === 0 ? "one-time-code" : "off"}
                   maxLength={1}
                   aria-invalid={codeError}
-                  aria-label={`Dígito ${index + 1} do código de verificação`}
+                  aria-label={t("auth.digitAria", { number: index + 1 })}
                 />
               ))}
             </div>
@@ -192,7 +195,7 @@ export default function Verify() {
           {error && <div className="alert-error full-width">{error}</div>}
 
           <button className="primary-button auth-submit" disabled={loading}>
-            {loading ? "Validando..." : "Validar código"}
+            {loading ? t("auth.validating") : t("auth.validateCode")}
           </button>
 
           <button
@@ -201,7 +204,7 @@ export default function Verify() {
             onClick={handleBackToLogin}
           >
             <ArrowLeft size={18} />
-            Voltar para login
+            {t("auth.backToLogin")}
           </button>
         </form>
       </section>

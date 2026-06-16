@@ -1,75 +1,91 @@
 import AnalysisResult from "./AnalysisResult.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { formatCurrency, formatDate, formatTime } from "../utils/formatters";
 
-function analysisId(analysis) {
-  return analysis?.externalId || analysis?._id || "ID não disponível";
+function analysisId(analysis, t) {
+  return analysis?.externalId || analysis?._id || t("common.unavailableId");
 }
 
-function analysisModeLabel(mode) {
-  return mode === "hybrid" ? "Regras locais + IA" : "Regras locais";
+function analysisModeLabel(mode, t) {
+  return mode === "hybrid" ? t("common.localRulesAi") : t("common.localRules");
 }
 
 export default function AnalysisPdfReport({ analysis, id }) {
+  const { language, t } = useLanguage();
+
   if (!analysis) return null;
 
-  const createdAt = [formatDate(analysis.createdAt), formatTime(analysis.createdAt)]
+  const createdAt = [
+    formatDate(analysis.createdAt, language),
+    formatTime(analysis.createdAt, language),
+  ]
     .filter((value) => value && value !== "-")
-    .join(" às ");
+    .join(t("pdf.generatedAtConnector"));
 
   return (
     <div id={id} className="analysis-pdf-report">
       <header className="analysis-pdf-header">
         <div>
           <span className="eyebrow">EmpregaSafe</span>
-          <h2>Relatório de análise de confiabilidade</h2>
+          <h2>{t("pdf.title")}</h2>
           <p>
-            Documento gerado para apoiar a avaliação de risco de uma vaga de
-            emprego.
+            {t("pdf.subtitle")}
           </p>
         </div>
 
         <div className="analysis-pdf-meta">
-          <strong>{analysisId(analysis)}</strong>
-          <span>{createdAt || "Data não disponível"}</span>
+          <strong>{analysisId(analysis, t)}</strong>
+          <span>{createdAt || t("common.notAvailable")}</span>
         </div>
       </header>
 
       <section className="card mini-summary analysis-pdf-summary">
-        <h3>Resumo da vaga</h3>
+        <h3>{t("pdf.summary")}</h3>
 
         <div className="analysis-pdf-grid">
           <p>
-            <strong>Vaga:</strong> {analysis.title || "Não informada"}
+            <strong>{t("common.job")}:</strong>{" "}
+            {analysis.title || t("common.notInformed")}
           </p>
 
           <p>
-            <strong>Empresa:</strong> {analysis.company || "Não informada"}
+            <strong>{t("common.company")}:</strong>{" "}
+            {analysis.company || t("common.notInformed")}
           </p>
 
           <p>
-            <strong>Salário:</strong>{" "}
-            {formatCurrency(analysis.salary, analysis.currency)}
+            <strong>{t("common.salary")}:</strong>{" "}
+            {formatCurrency(analysis.salary, analysis.currency, language)}
           </p>
 
           <p>
-            <strong>Contato:</strong> {analysis.contact || "Não informado"}
+            <strong>{t("common.contact")}:</strong>{" "}
+            {analysis.contact || t("common.notInformedMale")}
           </p>
 
           <p>
-            <strong>Link:</strong> {analysis.link || "Não informado"}
+            <strong>{t("common.link")}:</strong>{" "}
+            {analysis.link || t("common.notInformedMale")}
           </p>
 
           <p>
-            <strong>Modo:</strong> {analysisModeLabel(analysis.analysisMode)}
+            <strong>{t("common.mode")}:</strong>{" "}
+            {analysisModeLabel(analysis.analysisMode, t)}
           </p>
         </div>
 
         {analysis.analysisMode === "hybrid" && (
           <div className="analysis-pdf-ai">
-            <strong>Comparação com IA:</strong>
-            <span>Regras locais: {analysis.ruleScore ?? 0}/100</span>
-            <span>IA: {analysis.aiScore ?? "Não disponível"}/100</span>
-            <span>Diferença: {analysis.scoreDifference ?? 0} ponto(s)</span>
+            <strong>{t("pdf.aiComparison")}</strong>
+            <span>{t("pdf.ruleScore")} {analysis.ruleScore ?? 0}/100</span>
+            <span>
+              {t("pdf.aiScore")}{" "}
+              {analysis.aiScore ?? t("common.notAvailable")}/100
+            </span>
+            <span>
+              {t("pdf.difference")} {analysis.scoreDifference ?? 0}{" "}
+              {t("common.point")}
+            </span>
           </div>
         )}
       </section>
@@ -77,9 +93,7 @@ export default function AnalysisPdfReport({ analysis, id }) {
       <AnalysisResult analysis={analysis} />
 
       <footer className="analysis-pdf-footer">
-        Este relatório é um apoio à decisão. Ele não confirma fraude por si só;
-        recomenda-se validar empresa, domínio, canal de contato e condições da
-        vaga antes de compartilhar dados pessoais ou realizar pagamentos.
+        {t("pdf.footer")}
       </footer>
     </div>
   );

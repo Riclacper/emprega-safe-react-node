@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AnalysisPdfReport from "../components/AnalysisPdfReport.jsx";
 import RiskBadge from "../components/RiskBadge.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { listAnalyses } from "../services/analysisService";
 import { formatCurrency, formatDate, formatTime } from "../utils/formatters";
 import { exportAnalysisPdf } from "../utils/pdfExport";
@@ -8,11 +9,11 @@ import { exportAnalysisPdf } from "../utils/pdfExport";
 const PAGE_SIZE = 10;
 
 const filters = [
-  { label: "Todas", value: "all" },
-  { label: "Confiável", value: "confiavel" },
-  { label: "Suspeita", value: "suspeita" },
-  { label: "Fraudulenta", value: "fraudulenta" },
-  { label: "Crítica", value: "critica" },
+  { labelKey: "history.filtersAll", value: "all" },
+  { labelKey: "history.filtersSafe", value: "confiavel" },
+  { labelKey: "history.filtersSuspicious", value: "suspeita" },
+  { labelKey: "history.filtersFraudulent", value: "fraudulenta" },
+  { labelKey: "history.filtersCritical", value: "critica" },
 ];
 
 function normalize(value) {
@@ -71,6 +72,13 @@ function classificationWeight(classification) {
 }
 
 export default function History() {
+  const {
+    language,
+    t,
+    translateClassification,
+    translateReason,
+    translateRecommendation,
+  } = useLanguage();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [classificationFilter, setClassificationFilter] = useState("all");
@@ -177,6 +185,13 @@ export default function History() {
     await exportAnalysisPdf(
       selectedAnalysis,
       `EmpregaSafe-${selectedAnalysis.externalId}.pdf`,
+      {
+        t,
+        language,
+        translateClassification,
+        translateReason,
+        translateRecommendation,
+      },
     );
   }
 
@@ -184,14 +199,14 @@ export default function History() {
     if (!value) return "";
 
     if (value === "Potencialmente fraudulenta") {
-      return "Fraudulenta";
+      return translateClassification("Fraudulenta");
     }
 
     if (value === "Risco crítico") {
-      return "Crítica";
+      return t("risk.criticalShort");
     }
 
-    return value;
+    return translateClassification(value);
   }
 
   return (
@@ -200,11 +215,10 @@ export default function History() {
         {" "}
         <div className="section-title">
           <div>
-            <span className="eyebrow">Base de análises</span>
-            <h2>Registros de análise</h2>
+            <span className="eyebrow">{t("history.eyebrow")}</span>
+            <h2>{t("history.title")}</h2>
             <p>
-              Consulte as vagas analisadas, seus scores, classificações e modo
-              de verificação.
+              {t("history.text")}
             </p>
           </div>
 
@@ -212,7 +226,7 @@ export default function History() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por vaga, empresa, status ou ID"
+              placeholder={t("history.searchPlaceholder")}
             />
           </div>
         </div>
@@ -225,19 +239,19 @@ export default function History() {
                 className={classificationFilter === filter.value ? "active" : ""}
                 onClick={() => setClassificationFilter(filter.value)}
               >
-                {filter.label}
+                {t(filter.labelKey)}
               </button>
             ))}
           </div>
 
           <label className="history-sort">
-            <span>Ordenar por</span>
+            <span>{t("history.sortBy")}</span>
             <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-              <option value="date-desc">Mais recentes</option>
-              <option value="date-asc">Mais antigas</option>
-              <option value="score-desc">Maior score</option>
-              <option value="score-asc">Menor score</option>
-              <option value="classification-desc">Maior risco</option>
+              <option value="date-desc">{t("history.recent")}</option>
+              <option value="date-asc">{t("history.old")}</option>
+              <option value="score-desc">{t("history.highestScore")}</option>
+              <option value="score-asc">{t("history.lowestScore")}</option>
+              <option value="classification-desc">{t("history.highestRisk")}</option>
             </select>
           </label>
         </div>
@@ -246,11 +260,11 @@ export default function History() {
           <table className="history-table">
             <thead>
               <tr>
-                <th className="history-date-column">Data</th>
-                <th className="history-job-column">Vaga / Empresa</th>
-                <th className="history-salary-column">Salário</th>
-                <th className="history-risk-column">Risco</th>
-                <th className="history-details-column">Detalhes</th>
+                <th className="history-date-column">{t("common.date")}</th>
+                <th className="history-job-column">{t("history.jobCompany")}</th>
+                <th className="history-salary-column">{t("common.salary")}</th>
+                <th className="history-risk-column">{t("history.risk")}</th>
+                <th className="history-details-column">{t("common.details")}</th>
               </tr>
             </thead>
 
@@ -258,19 +272,19 @@ export default function History() {
               {paginated.map((item) => (
                 <tr key={item.externalId}>
                   <td className="history-date-column">
-                    <strong>{formatDate(item.createdAt)}</strong>
+                    <strong>{formatDate(item.createdAt, language)}</strong>
                     <br />
-                    <small>{formatTime(item.createdAt)}</small>
+                    <small>{formatTime(item.createdAt, language)}</small>
                   </td>
 
                   <td className="history-job-column">
                     <div className="history-job-cell">
                       <strong>{item.title}</strong>
-                      <span>{item.company || "Empresa não informada"}</span>
+                      <span>{item.company || t("common.notInformed")}</span>
                     </div>
                   </td>
                   <td className="history-salary-column">
-                    {formatCurrency(item.salary, item.currency)}
+                    {formatCurrency(item.salary, item.currency, language)}
                   </td>
                   <td className="history-risk-column">
                     <div className="history-risk-cell">
@@ -281,7 +295,9 @@ export default function History() {
                         {displayClassification(item.classification)}
                       </RiskBadge>
                       <small>
-                        {item.analysisMode === "hybrid" ? "Regras + IA" : "Regras"}
+                        {item.analysisMode === "hybrid"
+                          ? t("common.rulesAi")
+                          : t("common.rules")}
                       </small>
                     </div>
                   </td>
@@ -292,7 +308,7 @@ export default function History() {
                       className="report-view-button"
                       onClick={() => setSelectedAnalysis(item)}
                     >
-                      Ver
+                      {t("common.view")}
                     </button>
                   </td>
                 </tr>
@@ -301,7 +317,7 @@ export default function History() {
               {paginated.length === 0 && (
                 <tr>
                   <td className="history-empty-state" colSpan={5}>
-                    Nenhum registro encontrado para a busca ou filtro selecionado.
+                    {t("history.noRecords")}
                   </td>
                 </tr>
               )}
@@ -310,9 +326,11 @@ export default function History() {
         </div>
         <div className="pagination-footer">
           <span>
-            Exibindo {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–
-            {Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}{" "}
-            registros
+            {t("history.showing", {
+              start: filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
+              end: Math.min(page * PAGE_SIZE, filtered.length),
+              total: filtered.length,
+            })}
           </span>
 
           <div className="pagination-actions">
@@ -321,11 +339,11 @@ export default function History() {
               disabled={page === 1}
               onClick={() => setPage((current) => current - 1)}
             >
-              Anterior
+              {t("history.previous")}
             </button>
 
             <strong>
-              Página {page} de {totalPages}
+              {t("history.page", { page, total: totalPages })}
             </strong>
 
             <button
@@ -333,7 +351,7 @@ export default function History() {
               disabled={page === totalPages}
               onClick={() => setPage((current) => current + 1)}
             >
-              Próxima
+              {t("history.next")}
             </button>
           </div>
         </div>
@@ -347,14 +365,14 @@ export default function History() {
           <div className="report-modal" onClick={(event) => event.stopPropagation()}>
             <div className="report-modal-header">
               <div>
-                <span className="eyebrow">Relatório da análise</span>
+                <span className="eyebrow">{t("history.reportEyebrow")}</span>
                 <h2>{selectedAnalysis.title}</h2>
                 <div className="history-report-id-row">
                   <p>
                     <strong>ID:</strong>{" "}
                     {selectedAnalysis.externalId ||
                       selectedAnalysis._id ||
-                      "ID não disponível"}
+                      t("common.unavailableId")}
                   </p>
                   <button
                     type="button"
@@ -368,8 +386,8 @@ export default function History() {
                     }
                   >
                     {copiedId === (selectedAnalysis.externalId || selectedAnalysis._id)
-                      ? "ID copiado"
-                      : "Copiar ID"}
+                      ? t("history.copiedId")
+                      : t("history.copyId")}
                   </button>
                 </div>
               </div>
@@ -379,7 +397,7 @@ export default function History() {
                 className="report-clear-button report-modal-close-action"
                 onClick={() => setSelectedAnalysis(null)}
               >
-                Fechar
+                {t("common.close")}
               </button>
             </div>
 
@@ -396,7 +414,7 @@ export default function History() {
                 className="history-pdf-button"
                 onClick={exportHistoryPdf}
               >
-                Baixar relatório em PDF
+                {t("common.downloadPdf")}
               </button>
             </div>
           </div>

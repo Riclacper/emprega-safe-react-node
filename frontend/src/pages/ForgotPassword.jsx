@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import logo from "../assets/logo.png";
+import LanguageSelector from "../components/LanguageSelector.jsx";
+import { useLanguage } from "../context/LanguageContext.jsx";
 import { forgotPassword, resetPassword } from "../services/authService";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -31,7 +34,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     if (!email.trim()) {
-      setError("Informe o e-mail cadastrado.");
+      setError(t("auth.registeredEmail"));
       setEmailError(true);
       return;
     }
@@ -39,14 +42,14 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const data = await forgotPassword(email.trim());
+      await forgotPassword(email.trim());
 
       setEmailError(false);
-      setMessage(data.message || "Código enviado para o e-mail informado.");
+      setMessage(t("auth.sentCode"));
       setStep(2);
     } catch (err) {
       setMessage("");
-      setError(err.message || "Código inválido ou expirado.");
+      setError(err.message || t("auth.invalidCode"));
       setCodeError(true);
     } finally {
       setLoading(false);
@@ -60,19 +63,19 @@ export default function ForgotPassword() {
     setMessage("");
 
     if (code.trim().length !== 6) {
-      setError("Informe o código de 6 dígitos.");
+      setError(t("auth.informSixDigitCode"));
       setCodeError(true);
       return;
     }
 
     if (password.length < 6) {
-      setError("A nova senha deve ter pelo menos 6 caracteres.");
+      setError(t("auth.newPasswordMinError"));
       setPasswordError(true);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("As senhas não conferem.");
+      setError(t("auth.passwordMismatch"));
       setConfirmPasswordError(true);
       return;
     }
@@ -80,17 +83,17 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const data = await resetPassword(email.trim(), code.trim(), password);
+      await resetPassword(email.trim(), code.trim(), password);
 
       navigate("/login", {
         replace: true,
         state: {
-          message: data.message || "Senha redefinida com sucesso. Faça login.",
+          message: t("auth.passwordResetSuccess"),
         },
       });
     } catch (err) {
       setMessage("");
-      setError(err.message || "Insira o e-mail cadastrado.");
+      setError(err.message || t("auth.enterRegisteredEmail"));
       setEmailError(true);
     } finally {
       setLoading(false);
@@ -105,25 +108,25 @@ export default function ForgotPassword() {
 
           <div>
             <strong>EmpregaSafe</strong>
-            <span>Análise inteligente de vagas</span>
+            <span>{t("common.appTagline")}</span>
           </div>
         </div>
+        <LanguageSelector className="auth-language-selector" />
 
         <div className="auth-headline">
           <ShieldCheck size={42} />
 
-          <h1>Redefinir senha</h1>
+          <h1>{t("auth.resetTitle")}</h1>
 
           <p>
-            Informe seu e-mail cadastrado para receber um código de segurança e
-            criar uma nova senha.
+            {t("auth.resetText")}
           </p>
         </div>
 
         {step === 1 && (
           <form onSubmit={handleRequestCode} className="auth-form" noValidate>
             <label className={`field-group ${emailError ? "field-error" : ""}`}>
-              <span>E-mail</span>
+              <span>{t("common.email")}</span>
               <div className="field-control">
                 <Mail size={19} />
 
@@ -137,7 +140,7 @@ export default function ForgotPassword() {
                   }}
                   type="email"
                   autoComplete="email"
-                  placeholder="Digite seu e-mail"
+                  placeholder={t("auth.emailPlaceholder")}
                 />
               </div>
             </label>
@@ -146,10 +149,11 @@ export default function ForgotPassword() {
               <div className="alert-success full-width">{message}</div>
             )}
             <button className="primary-button auth-submit" disabled={loading}>
-              {loading ? "Enviando..." : "Enviar código"}
+              {loading ? t("common.sending") : t("auth.sendCode")}
             </button>
             <p className="auth-switch">
-              Lembrou a senha? <Link to="/login">Entrar</Link>
+              {t("auth.rememberedPassword")}{" "}
+              <Link to="/login">{t("auth.loginButton")}</Link>
             </p>
           </form>
         )}
@@ -161,7 +165,7 @@ export default function ForgotPassword() {
               <div className="alert-success full-width">{message}</div>
             )}
             <label className={`field-group ${codeError ? "field-error" : ""}`}>
-              <span>Código de 6 dígitos</span>
+              <span>{t("auth.sixDigitCode")}</span>
 
               <div className="field-control">
                 <input
@@ -172,7 +176,7 @@ export default function ForgotPassword() {
                     setCodeError(false);
                   }}
                   inputMode="numeric"
-                  placeholder="Digite o código recebido"
+                  placeholder={t("auth.sixDigitCodePlaceholder")}
                 />
               </div>
             </label>
@@ -180,7 +184,7 @@ export default function ForgotPassword() {
               className={`field-group ${passwordError ? "field-error" : ""}`}
             >
               {" "}
-              <span>Nova senha</span>
+              <span>{t("auth.newPassword")}</span>
               <div className="field-control">
                 <LockKeyhole size={19} />
 
@@ -193,14 +197,16 @@ export default function ForgotPassword() {
                   }}
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t("auth.minPasswordPlaceholder")}
                 />
 
                 <button
                   type="button"
                   className="field-icon-button"
                   onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  aria-label={
+                    showPassword ? t("auth.hidePassword") : t("auth.showPassword")
+                  }
                 >
                   {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                 </button>
@@ -210,7 +216,7 @@ export default function ForgotPassword() {
               className={`field-group ${confirmPasswordError ? "field-error" : ""}`}
             >
               {" "}
-              <span>Confirmar nova senha</span>
+              <span>{t("auth.confirmNewPassword")}</span>
               <div className="field-control">
                 <LockKeyhole size={19} />
 
@@ -223,7 +229,7 @@ export default function ForgotPassword() {
                   }}
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  placeholder="Repita a nova senha"
+                  placeholder={t("auth.confirmNewPasswordPlaceholder")}
                 />
 
                 <button
@@ -231,7 +237,9 @@ export default function ForgotPassword() {
                   className="field-icon-button"
                   onClick={() => setShowConfirmPassword((value) => !value)}
                   aria-label={
-                    showConfirmPassword ? "Ocultar senha" : "Mostrar senha"
+                    showConfirmPassword
+                      ? t("auth.hidePassword")
+                      : t("auth.showPassword")
                   }
                 >
                   {showConfirmPassword ? (
@@ -244,7 +252,7 @@ export default function ForgotPassword() {
             </label>
             {error && <div className="alert-error full-width">{error}</div>}
             <button className="primary-button auth-submit" disabled={loading}>
-              {loading ? "Redefinindo..." : "Redefinir senha"}
+              {loading ? t("auth.resetting") : t("auth.resetPassword")}
             </button>
             <p className="auth-switch">
               <button
@@ -263,7 +271,7 @@ export default function ForgotPassword() {
                   setConfirmPasswordError(false);
                 }}
               >
-                Usar outro e-mail
+                {t("auth.useAnotherEmail")}
               </button>
             </p>
           </form>

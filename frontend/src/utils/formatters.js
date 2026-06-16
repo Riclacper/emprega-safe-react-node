@@ -1,4 +1,4 @@
-export function formatCurrency(value, currency = "BRL") {
+export function formatCurrency(value, currency = "BRL", locale = "") {
   if (value === null || value === undefined || value === "") {
     return "Não informado";
   }
@@ -19,7 +19,7 @@ export function formatCurrency(value, currency = "BRL") {
     ? currency
     : "BRL";
 
-  return new Intl.NumberFormat(localeByCurrency[safeCurrency], {
+  return new Intl.NumberFormat(locale || localeByCurrency[safeCurrency], {
     style: "currency",
     currency: safeCurrency,
     minimumFractionDigits: 2,
@@ -27,7 +27,7 @@ export function formatCurrency(value, currency = "BRL") {
   }).format(number);
 }
 
-export function formatDate(date) {
+export function formatDate(date, locale = "pt-BR") {
   if (!date) return "-";
 
   const parsedDate = new Date(date);
@@ -36,14 +36,14 @@ export function formatDate(date) {
     return "-";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(parsedDate);
 }
 
-export function formatTime(date) {
+export function formatTime(date, locale = "pt-BR") {
   if (!date) return "";
 
   const parsedDate = new Date(date);
@@ -52,7 +52,7 @@ export function formatTime(date) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(parsedDate);
