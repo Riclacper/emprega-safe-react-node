@@ -6,7 +6,7 @@ O EmpregaSafe apoia candidatos antes que enviem dados pessoais, documentos, dinh
 
 ## Equipe
 
-Juliana Reis, Pedro Asafe, Matheus de Souza, Nycolle Jenifer, Patrícia Betânia, Beatriz Pereira and Ricardo Lacerda.
+Ricardo Lacerda Pereira, Juliana Reis, Matheus de Souza, Nycolle Jenifer, Patrícia Betânia, Pedro Asafe e Beatriz Pereira.
 
 ## Funcionalidades principais
 
